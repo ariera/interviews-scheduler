@@ -28,6 +28,7 @@ A constraint programming solution for scheduling multiple candidates across mult
 3. **Availability windows**: Sessions must fit within panel availability
 4. **Gap constraint**: **≤ 15 minutes** idle time between any two consecutive sessions for each candidate
 5. **Day bounds**: All sessions must fit within 08:30–17:00
+6. **Position constraints**: Force specific panels to be at fixed positions (first, last, or specific position)
 
 #### Soft Constraints (Preferences)
 - **Preferred order**: Director → Competencies → Customers → Lunch → HR → Team → Goodbye
@@ -55,13 +56,113 @@ This guarantees that **all gaps are ≤ 15 minutes** rather than just minimizing
 
 ### Prerequisites
 ```bash
-pip install ortools==9.10.4068
+pip install -r requirements.txt
 ```
 
-### Running the Algorithm
-```bash
-python schedule.py
+### Using the Class Directly (Python API)
+```python
+from schedule import InterviewScheduler
+
+# Define your parameters
+scheduler = InterviewScheduler(
+    num_candidates=3,
+    panels={"Director": 1, "HR": 3, ...},
+    order=["Director", "HR", ...],
+    availabilities={"Director": [(0, 6)], ...},
+    max_gap_minutes=15
+)
+
+# Solve and get results
+if scheduler.solve():
+    scheduler.print_solution()
 ```
+
+### Using the Command Line Interface
+```bash
+# Basic usage
+python cli.py config.yaml
+
+# With options
+python cli.py config.yaml --max-time 120 --output results.json
+
+# Validate configuration only
+python cli.py config.yaml --validate-only
+```
+
+### YAML Configuration Format
+Create a `config.yaml` file with your scheduling parameters:
+
+```yaml
+# Interview Scheduler Configuration
+# ================================
+
+# Basic scheduling parameters
+num_candidates: 3
+
+# Day configuration
+start_time: "08:30"      # When the interview day starts
+end_time: "17:00"        # When the interview day ends
+slot_duration_minutes: 15  # Duration of each time slot
+max_gap_minutes: 15      # Maximum allowed gap between consecutive sessions
+
+# Panel definitions with durations
+# Supported formats: '15min', '1h', '1h30min', or just numbers (minutes)
+panels:
+  Director: "15min"      # 15 minutes
+  Competencies: "1h"     # 60 minutes
+  Customers: "1h"        # 60 minutes
+  HR: "45min"           # 45 minutes
+  Lunch: "1h"           # 60 minutes
+  Team: "45min"         # 45 minutes
+  Goodbye: "30min"      # 30 minutes
+
+# Preferred order of panels (soft constraint)
+# The algorithm will try to follow this order but may deviate if necessary
+order:
+  - Director
+  - Competencies
+  - Customers
+  - Lunch
+  - Team
+  - HR
+  - Goodbye
+
+# Availability windows for each panel
+# Format: "HH:MM-HH:MM" or list of time ranges
+availabilities:
+  Director: "08:30-10:00"                    # Only available morning
+
+  Competencies:                              # Multiple windows
+    - "08:30-11:00"                         # Morning slot
+    - "12:00-14:00"                         # Early afternoon
+    - "16:00-17:00"                         # Late afternoon
+
+  Customers: "08:30-14:00"                   # Must finish by 2 PM
+
+  HR: "08:30-17:00"                         # Available all day
+
+  Team: "08:30-17:00"                       # Available all day
+
+  Goodbye: "08:30-17:00"                    # Available all day
+
+  Lunch: "11:45-13:30"                      # Canteen serving window
+
+# Position constraints (optional, hard constraints)
+# Force specific panels to be at fixed positions in the schedule
+position_constraints:
+  Goodbye: "last"                           # Goodbye must always be the last panel
+  # Director: "first"                       # Uncomment to force Director to be first
+  # Lunch: 3                               # Uncomment to force Lunch to be 4th panel (0-indexed)
+```
+
+### CLI Options
+
+| Option | Description |
+|--------|-------------|
+| `--max-time N` | Maximum solver time in seconds (default: 60) |
+| `--quiet, -q` | Suppress progress messages |
+| `--output FILE, -o FILE` | Save results to JSON file |
+| `--validate-only` | Only validate configuration without solving |
 
 ### Expected Output
 ```

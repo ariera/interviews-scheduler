@@ -1,1 +1,2 @@
-ortools
+ortools==9.10.4068
+PyYAML>=6.0
