@@ -13,6 +13,7 @@ services:
     volumes:
       - ./examples:/app/examples:ro
       - ./logs:/app/logs
+      - ./uploads:/app/uploads
     environment:
       - FLASK_ENV=production
       - FLASK_APP=src.web.app:app

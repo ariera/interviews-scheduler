@@ -22,8 +22,20 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from scheduler import InterviewScheduler, create_scheduler_from_config, load_config
 
 app = Flask(__name__)
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
-app.config['UPLOAD_FOLDER'] = tempfile.mkdtemp()
+
+# Configuration from environment variables
+app.config['MAX_CONTENT_LENGTH'] = int(os.environ.get('MAX_CONTENT_LENGTH', 16 * 1024 * 1024))  # 16MB max file size
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
+
+# Upload folder configuration
+upload_folder = os.environ.get('UPLOAD_FOLDER')
+if upload_folder:
+    # Use environment-specified upload folder
+    os.makedirs(upload_folder, exist_ok=True)
+    app.config['UPLOAD_FOLDER'] = upload_folder
+else:
+    # Fallback to temporary directory
+    app.config['UPLOAD_FOLDER'] = tempfile.mkdtemp()
 
 # Store temporary files
 temp_files = {}
