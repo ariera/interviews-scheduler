@@ -1,5 +1,7 @@
 # Interview Scheduler
 
+> **Disclaimer**: This repository has been entirely vibe-coded. While functional and feature-complete, it represents a rapid development approach focused on getting things working rather than following traditional software engineering practices. Use at your own discretion.
+
 A powerful constraint-based interview scheduling system that uses Google OR-Tools CP-SAT solver to optimize interview schedules with complex constraints.
 
 ## Features
