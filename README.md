@@ -89,6 +89,38 @@ python cli.py config.yaml --max-time 120 --output results.json
 python cli.py config.yaml --validate-only
 ```
 
+### Using the Web Interface
+The scheduler includes a modern web interface for easy configuration upload and solution viewing.
+
+#### Starting the Web Server
+```bash
+python app.py
+```
+
+The web interface will be available at `http://localhost:5001`
+
+#### Features
+- **Drag & Drop Upload**: Simply drag your YAML configuration file onto the interface
+- **Multiple Solutions**: Automatically generates up to 3 different scheduling solutions
+- **Interactive Viewing**: Tabbed interface to compare different solutions
+- **Solution Summary**: Overview of key metrics (order breaks, day end time, etc.)
+- **Download Results**: Export all solutions as JSON for further analysis
+- **Real-time Validation**: Immediate feedback on configuration errors
+
+#### Web Interface Workflow
+1. **Upload**: Drag and drop your YAML configuration file
+2. **Process**: The system automatically runs the scheduler multiple times to find different solutions
+3. **View**: Browse through the solutions using the tabbed interface
+4. **Compare**: See how different solutions vary in timing and order
+5. **Download**: Export the results for use in other tools
+
+#### Example Usage
+1. Create a YAML configuration file (see format below)
+2. Open `http://localhost:5001` in your browser
+3. Drag the YAML file onto the upload area
+4. Wait for processing (typically 10-30 seconds)
+5. Browse the solutions and download if needed
+
 ### YAML Configuration Format
 Create a `config.yaml` file with your scheduling parameters:
 
@@ -153,6 +185,11 @@ position_constraints:
   Goodbye: "last"                           # Goodbye must always be the last panel
   # Director: "first"                       # Uncomment to force Director to be first
   # Lunch: 3                               # Uncomment to force Lunch to be 4th panel (0-indexed)
+
+# Panel conflicts (optional, hard constraints)
+# Prevent certain panels from running simultaneously due to shared resources
+panel_conflicts:
+  - [Team, Goodbye]                         # Team and Goodbye share people, cannot run simultaneously
 ```
 
 ### CLI Options

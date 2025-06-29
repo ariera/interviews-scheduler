@@ -1,0 +1,38 @@
+# Example configuration for web interface testing
+num_candidates: 2
+max_gap_minutes: 15
+slot_duration_minutes: 15
+start_time: "08:30"
+end_time: "17:00"
+
+panels:
+  Director: "15min"      # 15 minutes
+  Competencies: "1h"     # 1 hour
+  HR: "45min"           # 45 minutes
+  Lunch: "1h"           # 1 hour
+  Team: "45min"         # 45 minutes
+  Goodbye: "30min"      # 30 minutes
+
+order:
+  - Director
+  - Competencies
+  - Lunch
+  - Team
+  - HR
+  - Goodbye
+
+availabilities:
+  Director: "08:30-10:00"
+  Competencies:
+    - "08:30-11:00"
+    - "12:00-14:00"
+  HR: "08:30-17:00"
+  Lunch: "11:45-13:30"
+  Team: "08:30-17:00"
+  Goodbye: "08:30-17:00"
+
+position_constraints:
+  Goodbye: last
+
+panel_conflicts:
+  - [Team, Goodbye]

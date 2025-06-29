@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interview Scheduler - Web Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .upload-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .upload-area {
+            border: 3px dashed #ddd;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background-color: #f8f9ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #667eea;
+            background-color: #f0f4ff;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        }
+
+        .progress {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .status {
+            margin-top: 10px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .help-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .help-toggle {
+            background: none;
+            border: none;
+            color: #667eea;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 10px 0;
+            text-decoration: underline;
+        }
+
+        .help-content {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .help-content.show {
+            display: block;
+        }
+
+        .help-content h3 {
+            color: #333;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 5px;
+        }
+
+        .help-content h4 {
+            color: #667eea;
+            margin: 20px 0 10px 0;
+        }
+
+        .help-content p {
+            margin-bottom: 10px;
+        }
+
+        .help-content ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .help-content li {
+            margin-bottom: 5px;
+        }
+
+        .yaml-example {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+
+        .config-summary {
+            background: linear-gradient(135deg, #f8f9ff 0%, #e8ecff 100%);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .config-summary h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .config-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .config-item strong {
+            color: #333;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .config-item span {
+            color: #666;
+        }
+
+        .results-section {
+            display: none;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .solution-tabs {
+            display: flex;
+            border-bottom: 2px solid #eee;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .tab.active {
+            border-bottom-color: #667eea;
+            color: #667eea;
+        }
+
+        .tab:hover {
+            background-color: #f8f9ff;
+        }
+
+        .solution-content {
+            display: none;
+        }
+
+        .solution-content.active {
+            display: block;
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f8f9ff 0%, #e8ecff 100%);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .candidate-schedule {
+            background: #f8f9ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .candidate-header {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .schedule-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .schedule-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+            vertical-align: middle;
+        }
+
+        .schedule-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .schedule-table tr:hover {
+            background-color: #f8f9ff;
+        }
+
+        .panel-name {
+            font-weight: 600;
+            color: #667eea;
+            min-width: 120px;
+        }
+
+        .time-slot {
+            font-weight: 600;
+            color: #333;
+            min-width: 150px;
+        }
+
+        .gap-info {
+            font-size: 0.85rem;
+            color: #666;
+            font-style: italic;
+            min-width: 100px;
+        }
+
+        .gap-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .gap-badge.back-to-back {
+            background-color: #e8f5e8;
+            color: #2d5a2d;
+        }
+
+        .gap-badge.gap {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .error {
+            background: #ffe6e6;
+            color: #d63031;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #d63031;
+            margin: 20px 0;
+        }
+
+        .success {
+            background: #e6ffe6;
+            color: #00b894;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #00b894;
+            margin: 20px 0;
+        }
+
+        .download-section {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+        }
+
+        /* Mobile responsiveness for tables */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .upload-section, .results-section, .help-section {
+                padding: 20px;
+            }
+
+            .summary-stats, .config-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .schedule-table {
+                font-size: 0.9rem;
+            }
+
+            .schedule-table th,
+            .schedule-table td {
+                padding: 8px 10px;
+            }
+
+            .panel-name {
+                min-width: 80px;
+            }
+
+            .time-slot {
+                min-width: 120px;
+            }
+
+            .gap-info {
+                min-width: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📅 Interview Scheduler</h1>
+            <p>Upload your YAML configuration and get multiple scheduling solutions</p>
+        </div>
+
+        <div class="help-section">
+            <button class="help-toggle" onclick="toggleHelp()">📖 Show/Hide Help & YAML Format Guide</button>
+            <div class="help-content" id="helpContent">
+                <h3>📋 YAML Configuration Format</h3>
+
+                <h4>Required Fields</h4>
+                <ul>
+                    <li><strong>num_candidates</strong>: Number of candidates to schedule</li>
+                    <li><strong>panels</strong>: Dictionary of panel names and durations</li>
+                    <li><strong>order</strong>: Preferred sequence of panels (soft constraint)</li>
+                    <li><strong>availabilities</strong>: Time windows when each panel is available</li>
+                </ul>
+
+                <h4>Optional Fields</h4>
+                <ul>
+                    <li><strong>max_gap_minutes</strong>: Maximum gap between sessions (default: 15)</li>
+                    <li><strong>start_time</strong>: Day start time (default: "08:30")</li>
+                    <li><strong>end_time</strong>: Day end time (default: "17:00")</li>
+                    <li><strong>slot_duration_minutes</strong>: Time slot duration (default: 15)</li>
+                    <li><strong>position_constraints</strong>: Force panels to specific positions</li>
+                    <li><strong>panel_conflicts</strong>: Panels that cannot run simultaneously</li>
+                </ul>
+
+                <h4>Duration Formats</h4>
+                <p>Panel durations can be specified as:</p>
+                <ul>
+                    <li><code>"15min"</code> - 15 minutes</li>
+                    <li><code>"1h"</code> - 1 hour</li>
+                    <li><code>"1h30min"</code> - 1 hour 30 minutes</li>
+                    <li><code>30</code> - 30 minutes (just the number)</li>
+                </ul>
+
+                <h4>Availability Formats</h4>
+                <p>Time windows can be specified as:</p>
+                <ul>
+                    <li><code>"08:30-10:00"</code> - Single time range</li>
+                    <li><code>["08:30-10:00", "14:00-16:00"]</code> - Multiple time ranges</li>
+                </ul>
+
+                <h4>Position Constraints</h4>
+                <p>Force panels to specific positions:</p>
+                <ul>
+                    <li><code>"first"</code> - Must be the first panel</li>
+                    <li><code>"last"</code> - Must be the last panel</li>
+                    <li><code>2</code> - Must be at position 2 (0-indexed)</li>
+                </ul>
+
+                <h4>Complete Example</h4>
+                <p>Here's a complete example configuration with all features:</p>
+                <div class="yaml-example"># Interview Scheduler Configuration - Complete Example
+# ===================================================
+# This example demonstrates all available features
+
+# Basic scheduling parameters
+num_candidates: 3
+
+# Day configuration
+start_time: "08:30"      # When the interview day starts
+end_time: "17:00"        # When the interview day ends
+slot_duration_minutes: 15  # Duration of each time slot
+max_gap_minutes: 15      # Maximum allowed gap between consecutive sessions
+
+# Panel definitions with durations
+panels:
+  Director: "15min"      # 15 minutes - Quick introduction
+  Competencies: "1h"     # 60 minutes - Technical assessment
+  Customers: "1h"        # 60 minutes - Customer-facing skills
+  HR: "45min"           # 45 minutes - HR interview
+  Lunch: "1h"           # 60 minutes - Lunch break
+  Team: "45min"         # 45 minutes - Team fit assessment
+  Goodbye: "30min"      # 30 minutes - Closing session
+
+# Preferred order of panels (soft constraint)
+order:
+  - Director
+  - Competencies
+  - Customers
+  - Lunch
+  - Team
+  - HR
+  - Goodbye
+
+# Availability windows for each panel
+availabilities:
+  Director: "08:30-10:00"                    # Only available morning
+  Competencies:                              # Multiple windows
+    - "08:30-11:00"                         # Morning slot
+    - "12:00-14:00"                         # Early afternoon
+    - "16:00-17:00"                         # Late afternoon
+  Customers: "08:30-14:00"                   # Must finish by 2 PM
+  HR: "08:30-17:00"                         # Available all day
+  Team: "08:30-17:00"                       # Available all day
+  Goodbye: "08:30-17:00"                    # Available all day
+  Lunch: "11:45-13:30"                      # Canteen serving window
+
+# Position constraints (optional, hard constraints)
+position_constraints:
+  Goodbye: "last"                           # Goodbye must always be the last panel
+
+# Panel conflicts (optional, hard constraints)
+panel_conflicts:
+  - [Team, Goodbye]                         # Team and Goodbye share people</div>
+
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn" onclick="downloadExample()">📥 Download Complete Example</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="upload-section">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📁</div>
+                <h3>Upload YAML Configuration</h3>
+                <p>Drag and drop your YAML file here, or click to browse</p>
+                <input type="file" id="fileInput" class="file-input" accept=".yaml,.yml">
+                <br><br>
+                <button class="btn" onclick="document.getElementById('fileInput').click()">
+                    Choose File
+                </button>
+            </div>
+
+            <div class="progress" id="progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="status" id="status">Processing...</div>
+            </div>
+        </div>
+
+        <div class="results-section" id="resultsSection">
+            <div class="config-summary" id="configSummary"></div>
+
+            <div class="summary-stats" id="summaryStats"></div>
+
+            <div class="solution-tabs" id="solutionTabs"></div>
+
+            <div id="solutionContents"></div>
+
+            <div class="download-section">
+                <button class="btn" id="downloadBtn" onclick="downloadResults()">
+                    📥 Download All Solutions (JSON)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSessionId = null;
+        let currentSolutions = [];
+        let currentConfig = null;
+
+        // File upload handling
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const progress = document.getElementById('progress');
+        const progressFill = document.getElementById('progressFill');
+        const status = document.getElementById('status');
+        const resultsSection = document.getElementById('resultsSection');
+
+        // Drag and drop functionality
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (!file.name.toLowerCase().endsWith('.yaml') && !file.name.toLowerCase().endsWith('.yml')) {
+                showError('Please select a YAML file (.yaml or .yml)');
+                return;
+            }
+
+            uploadFile(file);
+        }
+
+        function uploadFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Show progress
+            progress.style.display = 'block';
+            progressFill.style.width = '0%';
+            status.textContent = 'Uploading file...';
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    currentSessionId = data.session_id;
+                    currentConfig = data.summary;
+                    showSuccess(`Found ${data.num_solutions} different solutions!`);
+                    loadSolutions(data.session_id);
+                } else {
+                    showError(data.error);
+                }
+            })
+            .catch(error => {
+                showError('Upload failed: ' + error.message);
+            })
+            .finally(() => {
+                progress.style.display = 'none';
+            });
+        }
+
+        function loadSolutions(sessionId) {
+            status.textContent = 'Loading solutions...';
+            progress.style.display = 'block';
+            progressFill.style.width = '50%';
+
+            fetch(`/solutions/${sessionId}`)
+            .then(response => response.json())
+            .then(solutions => {
+                currentSolutions = solutions;
+                displaySolutions(solutions);
+                progressFill.style.width = '100%';
+                status.textContent = 'Complete!';
+                setTimeout(() => {
+                    progress.style.display = 'none';
+                }, 1000);
+            })
+            .catch(error => {
+                showError('Failed to load solutions: ' + error.message);
+                progress.style.display = 'none';
+            });
+        }
+
+        function displaySolutions(solutions) {
+            resultsSection.style.display = 'block';
+
+            // Display configuration summary
+            displayConfigSummary();
+
+            // Display summary stats
+            const summaryStats = document.getElementById('summaryStats');
+            const firstSolution = solutions[0];
+            summaryStats.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${solutions.length}</div>
+                    <div class="stat-label">Solutions Found</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${firstSolution.summary.order_breaks}</div>
+                    <div class="stat-label">Order Breaks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${firstSolution.summary.day_ends_at}</div>
+                    <div class="stat-label">Day Ends At</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${firstSolution.summary.max_gap_enforced}</div>
+                    <div class="stat-label">Max Gap</div>
+                </div>
+            `;
+
+            // Create tabs
+            const solutionTabs = document.getElementById('solutionTabs');
+            const solutionContents = document.getElementById('solutionContents');
+
+            solutionTabs.innerHTML = '';
+            solutionContents.innerHTML = '';
+
+            solutions.forEach((solution, index) => {
+                // Create tab
+                const tab = document.createElement('div');
+                tab.className = `tab ${index === 0 ? 'active' : ''}`;
+                tab.textContent = `Solution ${index + 1}`;
+                tab.onclick = () => showSolution(index);
+                solutionTabs.appendChild(tab);
+
+                // Create content
+                const content = document.createElement('div');
+                content.className = `solution-content ${index === 0 ? 'active' : ''}`;
+                content.innerHTML = createSolutionHTML(solution);
+                solutionContents.appendChild(content);
+            });
+        }
+
+        function displayConfigSummary() {
+            const configSummary = document.getElementById('configSummary');
+            configSummary.innerHTML = `
+                <h3>📋 Uploaded Configuration Summary</h3>
+                <div class="config-grid">
+                    <div class="config-item">
+                        <strong>Candidates</strong>
+                        <span>${currentConfig.num_candidates}</span>
+                    </div>
+                    <div class="config-item">
+                        <strong>Panels</strong>
+                        <span>${currentConfig.num_panels}</span>
+                    </div>
+                    <div class="config-item">
+                        <strong>Max Gap</strong>
+                        <span>${currentConfig.max_gap} minutes</span>
+                    </div>
+                    <div class="config-item">
+                        <strong>Status</strong>
+                        <span>✅ Valid configuration</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showSolution(index) {
+            // Update tabs
+            document.querySelectorAll('.tab').forEach((tab, i) => {
+                tab.classList.toggle('active', i === index);
+            });
+
+            // Update content
+            document.querySelectorAll('.solution-content').forEach((content, i) => {
+                content.classList.toggle('active', i === index);
+            });
+        }
+
+        function createSolutionHTML(solution) {
+            let html = `
+                <div class="candidate-schedule">
+                    <div class="candidate-header">📊 Solution Summary</div>
+                    <p><strong>Status:</strong> ${solution.summary.status}</p>
+                    <p><strong>Order Breaks:</strong> ${solution.summary.order_breaks}</p>
+                    <p><strong>Day Ends At:</strong> ${solution.summary.day_ends_at}</p>
+                    <p><strong>Max Gap Enforced:</strong> ${solution.summary.max_gap_enforced}</p>
+                </div>
+            `;
+
+            // Add each candidate's schedule
+            Object.entries(solution.schedules).forEach(([candidateName, sessions]) => {
+                // Calculate total idle time
+                let totalIdleTime = 0;
+                sessions.forEach(session => {
+                    if (session.gap_before !== undefined) {
+                        totalIdleTime += session.gap_before;
+                    }
+                });
+
+                html += `
+                    <div class="candidate-schedule">
+                        <div class="candidate-header">👤 ${candidateName.replace('_', ' ').toUpperCase()}</div>
+                        <table class="schedule-table">
+                            <thead>
+                                <tr>
+                                    <th>Panel</th>
+                                    <th>Time</th>
+                                    <th>Gap</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+
+                sessions.forEach(session => {
+                    let gapBadge = '';
+                    if (session.gap_before !== undefined) {
+                        if (session.gap_before === 0) {
+                            gapBadge = '<span class="gap-badge back-to-back">back-to-back</span>';
+                        } else {
+                            gapBadge = `<span class="gap-badge gap">${session.gap_before} min gap</span>`;
+                        }
+                    }
+
+                    html += `
+                        <tr>
+                            <td class="panel-name">${session.panel}</td>
+                            <td class="time-slot">${session.start_time} – ${session.end_time}</td>
+                            <td class="gap-info">${gapBadge}</td>
+                        </tr>
+                    `;
+                });
+
+                // Add summary row
+                html += `
+                            </tbody>
+                            <tfoot>
+                                <tr style="background-color: #f8f9ff; font-weight: 600;">
+                                    <td colspan="2" style="text-align: right; color: #667eea;">Total Idle Time:</td>
+                                    <td style="color: #333;">${totalIdleTime} minutes</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                `;
+            });
+
+            return html;
+        }
+
+        function downloadResults() {
+            if (currentSessionId) {
+                window.open(`/download/${currentSessionId}`, '_blank');
+            }
+        }
+
+        function downloadExample() {
+            const exampleContent = `# Interview Scheduler Configuration - Complete Example
+# ===================================================
+# This example demonstrates all available features
+
+# Basic scheduling parameters
+num_candidates: 3
+
+# Day configuration
+start_time: "08:30"      # When the interview day starts
+end_time: "17:00"        # When the interview day ends
+slot_duration_minutes: 15  # Duration of each time slot
+max_gap_minutes: 15      # Maximum allowed gap between consecutive sessions
+
+# Panel definitions with durations
+panels:
+  Director: "15min"      # 15 minutes - Quick introduction
+  Competencies: "1h"     # 60 minutes - Technical assessment
+  Customers: "1h"        # 60 minutes - Customer-facing skills
+  HR: "45min"           # 45 minutes - HR interview
+  Lunch: "1h"           # 60 minutes - Lunch break
+  Team: "45min"         # 45 minutes - Team fit assessment
+  Goodbye: "30min"      # 30 minutes - Closing session
+
+# Preferred order of panels (soft constraint)
+order:
+  - Director
+  - Competencies
+  - Customers
+  - Lunch
+  - Team
+  - HR
+  - Goodbye
+
+# Availability windows for each panel
+availabilities:
+  Director: "08:30-10:00"                    # Only available morning
+  Competencies:                              # Multiple windows
+    - "08:30-11:00"                         # Morning slot
+    - "12:00-14:00"                         # Early afternoon
+    - "16:00-17:00"                         # Late afternoon
+  Customers: "08:30-14:00"                   # Must finish by 2 PM
+  HR: "08:30-17:00"                         # Available all day
+  Team: "08:30-17:00"                       # Available all day
+  Goodbye: "08:30-17:00"                    # Available all day
+  Lunch: "11:45-13:30"                      # Canteen serving window
+
+# Position constraints (optional, hard constraints)
+position_constraints:
+  Goodbye: "last"                           # Goodbye must always be the last panel
+
+# Panel conflicts (optional, hard constraints)
+panel_conflicts:
+  - [Team, Goodbye]                         # Team and Goodbye share people`;
+
+            const blob = new Blob([exampleContent], { type: 'text/yaml' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'interview_scheduler_example.yaml';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        function toggleHelp() {
+            const helpContent = document.getElementById('helpContent');
+            helpContent.classList.toggle('show');
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.textContent = message;
+            uploadArea.appendChild(errorDiv);
+            setTimeout(() => errorDiv.remove(), 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success';
+            successDiv.textContent = message;
+            uploadArea.appendChild(successDiv);
+            setTimeout(() => successDiv.remove(), 5000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+# Interview Scheduler Configuration - Complete Example
+# ===================================================
+# This example demonstrates all available features of the interview scheduler
+# Copy this file and modify it for your specific needs
+
+# Basic scheduling parameters
+num_candidates: 3
+
+# Day configuration
+start_time: "08:30"      # When the interview day starts
+end_time: "17:00"        # When the interview day ends
+slot_duration_minutes: 15  # Duration of each time slot
+max_gap_minutes: 15      # Maximum allowed gap between consecutive sessions
+
+# Panel definitions with durations
+# Supported formats: '15min', '1h', '1h30min', or just numbers (minutes)
+panels:
+  Director: "15min"      # 15 minutes - Quick introduction
+  Competencies: "1h"     # 60 minutes - Technical assessment
+  Customers: "1h"        # 60 minutes - Customer-facing skills
+  HR: "45min"           # 45 minutes - HR interview
+  Lunch: "1h"           # 60 minutes - Lunch break
+  Team: "45min"         # 45 minutes - Team fit assessment
+  Goodbye: "30min"      # 30 minutes - Closing session
+
+# Preferred order of panels (soft constraint)
+# The algorithm will try to follow this order but may deviate if necessary
+order:
+  - Director
+  - Competencies
+  - Customers
+  - Lunch
+  - Team
+  - HR
+  - Goodbye
+
+# Availability windows for each panel
+# Format: "HH:MM-HH:MM" or list of time ranges
+availabilities:
+  Director: "08:30-10:00"                    # Only available morning
+
+  Competencies:                              # Multiple windows
+    - "08:30-11:00"                         # Morning slot
+    - "12:00-14:00"                         # Early afternoon
+    - "16:00-17:00"                         # Late afternoon
+
+  Customers: "08:30-14:00"                   # Must finish by 2 PM
+
+  HR: "08:30-17:00"                         # Available all day
+
+  Team: "08:30-17:00"                       # Available all day
+
+  Goodbye: "08:30-17:00"                    # Available all day
+
+  Lunch: "11:45-13:30"                      # Canteen serving window
+
+# Position constraints (optional, hard constraints)
+# Force specific panels to be at fixed positions in the schedule
+position_constraints:
+  Goodbye: "last"                           # Goodbye must always be the last panel
+  # Director: "first"                       # Uncomment to force Director to be first
+  # Lunch: 3                               # Uncomment to force Lunch to be 4th panel (0-indexed)
+
+# Panel conflicts (optional, hard constraints)
+# Prevent certain panels from running simultaneously due to shared resources
+panel_conflicts:
+  - [Team, Goodbye]                         # Team and Goodbye share people, cannot run simultaneously
+  # - [HR, Competencies]                    # Uncomment if HR and Competencies share interviewers
+
+# Additional examples and tips:
+# =============================
+#
+# 1. For a simpler configuration, you can omit optional fields:
+#    - max_gap_minutes (defaults to 15)
+#    - start_time (defaults to "08:30")
+#    - end_time (defaults to "17:00")
+#    - slot_duration_minutes (defaults to 15)
+#    - position_constraints (optional)
+#    - panel_conflicts (optional)
+#
+# 2. Duration formats supported:
+#    - "15min" = 15 minutes
+#    - "1h" = 1 hour
+#    - "1h30min" = 1 hour 30 minutes
+#    - 30 = 30 minutes (just the number)
+#
+# 3. Availability formats:
+#    - Single window: "08:30-10:00"
+#    - Multiple windows: ["08:30-10:00", "14:00-16:00"]
+#
+# 4. Position constraints:
+#    - "first" = Must be the first panel
+#    - "last" = Must be the last panel
+#    - 2 = Must be at position 2 (0-indexed)
+#
+# 5. Panel conflicts:
+#    - Use when panels share interviewers or resources
+#    - Prevents those panels from running simultaneously
+#
+# 6. Tips for better results:
+#    - Start with fewer constraints and add more as needed
+#    - Ensure availability windows are realistic
+#    - Consider panel conflicts carefully
+#    - Use position constraints sparingly
