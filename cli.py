@@ -218,6 +218,9 @@ def create_scheduler_from_config(config: Dict[str, Any]) -> InterviewScheduler:
     # Parse position constraints (optional)
     position_constraints = config.get('position_constraints', {})
 
+    # Parse panel conflicts (optional)
+    panel_conflicts = config.get('panel_conflicts', [])
+
     # Create final scheduler with parsed availabilities
     scheduler = InterviewScheduler(
         num_candidates=num_candidates,
@@ -229,7 +232,8 @@ def create_scheduler_from_config(config: Dict[str, Any]) -> InterviewScheduler:
         start_time_hour=start_hour,
         start_time_minute=start_minute,
         slot_duration_minutes=slot_duration_minutes,
-        position_constraints=position_constraints
+        position_constraints=position_constraints,
+        panel_conflicts=panel_conflicts
     )
 
     return scheduler
@@ -251,7 +255,7 @@ The YAML configuration file should contain:
   - panels: dictionary of panel names and durations
   - order: preferred order of panels
   - availabilities: availability windows for each panel
-  - Optional: start_time, end_time, max_gap_minutes, slot_duration_minutes, position_constraints
+  - Optional: start_time, end_time, max_gap_minutes, slot_duration_minutes, position_constraints, panel_conflicts
         """
     )
 

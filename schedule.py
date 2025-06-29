@@ -32,7 +32,8 @@ class InterviewScheduler:
         start_time_hour: int = 8,
         start_time_minute: int = 30,
         slot_duration_minutes: int = 15,
-        position_constraints: Optional[Dict[str, str]] = None
+        position_constraints: Optional[Dict[str, str]] = None,
+        panel_conflicts: Optional[List[List[str]]] = None
     ):
         """
         Initialize the interview scheduler.
@@ -48,6 +49,7 @@ class InterviewScheduler:
             start_time_minute: Day start minute (default 30 for 08:30)
             slot_duration_minutes: Duration of each slot in minutes (default 15)
             position_constraints: Dict mapping panel names to positions ("first", "last", or integer)
+            panel_conflicts: List of panel groups that cannot run simultaneously (shared resources)
         """
         self.num_candidates = num_candidates
         self.panels = panels
@@ -59,6 +61,7 @@ class InterviewScheduler:
         self.start_time_minute = start_time_minute
         self.slot_duration_minutes = slot_duration_minutes
         self.position_constraints = position_constraints or {}
+        self.panel_conflicts = panel_conflicts or []
 
         # Derived parameters
         self.candidates = range(num_candidates)
@@ -109,6 +112,19 @@ class InterviewScheduler:
                 raise ValueError(f"Invalid position type for panel '{panel}'. "
                                "Position must be 'first', 'last', or an integer")
 
+        # Check panel conflicts are valid
+        for i, conflict_group in enumerate(self.panel_conflicts):
+            if not isinstance(conflict_group, list) or len(conflict_group) < 2:
+                raise ValueError(f"Panel conflict group {i} must be a list with at least 2 panels")
+
+            for panel in conflict_group:
+                if panel not in self.panels:
+                    raise ValueError(f"Panel '{panel}' in conflict group {i} not found in panels dict")
+
+            # Check for duplicates within the group
+            if len(set(conflict_group)) != len(conflict_group):
+                raise ValueError(f"Panel conflict group {i} contains duplicate panels: {conflict_group}")
+
     def time_to_slot(self, hour: int, minute: int) -> int:
         """Convert clock time to slot index."""
         return ((hour - self.start_time_hour) * 60 + (minute - self.start_time_minute)) // self.slot_duration_minutes
@@ -153,6 +169,7 @@ class InterviewScheduler:
         self._add_basic_constraints(interval_vars, verbose)
         self._add_gap_constraints(verbose)
         self._add_position_constraints(verbose)
+        self._add_panel_conflict_constraints(interval_vars, verbose)
         break_vars = self._add_order_constraints(verbose)
         self._set_objective(break_vars)
 
@@ -449,6 +466,25 @@ class InterviewScheduler:
             print(f"  Total idle time: {total_idle_minutes} minutes")
             print()
 
+    def _add_panel_conflict_constraints(self, interval_vars, verbose):
+        """Add constraints to prevent conflicting panels from running simultaneously."""
+        if not self.panel_conflicts:
+            return
+
+        if verbose:
+            print("Adding panel conflict constraints...")
+
+        for conflict_group in self.panel_conflicts:
+            # Collect all intervals for all panels in this conflict group across all candidates
+            conflicting_intervals = []
+
+            for panel in conflict_group:
+                for c in self.candidates:
+                    conflicting_intervals.append(interval_vars[(c, panel)])
+
+            # All these intervals cannot overlap with each other
+            self.model.AddNoOverlap(conflicting_intervals)
+
 
 def main():
     """Example usage with the original problem parameters."""
@@ -498,7 +534,8 @@ def main():
         availabilities=availabilities,
         slots_per_day=34,
         max_gap_minutes=15,
-        position_constraints={"Goodbye": "last"}  # Force Goodbye to be last
+        position_constraints={"Goodbye": "last"},  # Force Goodbye to be last
+        panel_conflicts=[["Team", "Goodbye"]]      # Team and Goodbye share people, cannot run simultaneously
     )
 
     if scheduler.solve(verbose=True):

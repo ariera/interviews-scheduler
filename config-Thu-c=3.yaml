@@ -59,10 +59,3 @@ position_constraints:
   # Competencies: 1
   Goodbye: "last"                         # Goodbye must always be the last panel
   # Lunch: 3                              # Uncomment to force Lunch to be 4th panel (0-indexed)
-
-# Panel conflicts (hard constraints)
-# Panels that cannot run simultaneously due to shared resources/people
-panel_conflicts:
-  - ["Team", "Goodbye"]                   # Team and Goodbye share people, cannot run at same time
-  # - ["Director", "HR"]                  # Uncomment if Director and HR share people
-  # - ["Panel1", "Panel2", "Panel3"]     # Example: 3+ panels sharing resources
