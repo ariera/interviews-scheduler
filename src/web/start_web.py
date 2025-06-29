@@ -16,13 +16,13 @@ def main():
     """Start the web interface with helpful instructions."""
 
     # Check if we're in the right directory
-    if not Path('app.py').exists():
-        print("❌ Error: app.py not found in current directory")
-        print("Please run this script from the interview_scheduler directory")
+    if not Path('src/web/app.py').exists():
+        print("❌ Error: app.py not found in src/web/ directory")
+        print("Please run this script from the interview_scheduler root directory")
         sys.exit(1)
 
     # Check if templates directory exists
-    if not Path('templates').exists():
+    if not Path('src/web/templates').exists():
         print("❌ Error: templates directory not found")
         print("Please ensure the web interface files are properly installed")
         sys.exit(1)
@@ -38,7 +38,7 @@ def main():
     print("🌐 The web interface will be available at:")
     print("   http://localhost:5001")
     print()
-    print("📁 Example configuration file: example-web.yaml")
+    print("📁 Example configuration files: examples/")
     print()
     print("⏳ Starting server... (Press Ctrl+C to stop)")
     print("=" * 50)
@@ -58,7 +58,7 @@ def main():
 
     # Start the Flask app
     try:
-        from app import app
+        from .app import app
         app.run(debug=False, host='0.0.0.0', port=5001)
     except KeyboardInterrupt:
         print("\n👋 Web interface stopped")

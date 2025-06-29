@@ -3,7 +3,7 @@
 Command-line interface for the Interview Scheduler.
 
 Usage:
-    python cli.py config.yaml [options]
+    python run_cli.py config.yaml [options]
 
 The YAML configuration file should contain all scheduling parameters.
 """
@@ -14,7 +14,7 @@ import yaml
 from pathlib import Path
 from typing import Dict, List, Tuple, Any
 
-from schedule import InterviewScheduler
+from .schedule import InterviewScheduler
 
 
 def parse_time_to_minutes(time_str: str) -> Tuple[int, int]:
@@ -198,31 +198,32 @@ def create_scheduler_from_config(config: Dict[str, Any]) -> InterviewScheduler:
     # Create a temporary scheduler just for time conversion utilities
     # We'll use a minimal scheduler that bypasses validation
     class TempScheduler:
-        def __init__(self, start_hour, start_minute, slot_duration_minutes):
+        def __init__(self, start_hour, start_minute, slot_duration):
             self.start_time_hour = start_hour
             self.start_time_minute = start_minute
-            self.slot_duration_minutes = slot_duration_minutes
+            self.slot_duration_minutes = slot_duration
 
         def time_to_slot(self, hour: int, minute: int) -> int:
             return ((hour - self.start_time_hour) * 60 + (minute - self.start_time_minute)) // self.slot_duration_minutes
 
     temp_scheduler = TempScheduler(start_hour, start_minute, slot_duration_minutes)
 
-    # Parse availability windows
+    # Parse availabilities
     availabilities = {}
     for panel_name, windows in config['availabilities'].items():
         if isinstance(windows, str):
-            windows = [windows]  # Convert single window to list
-        availabilities[panel_name] = parse_availability_windows(windows, temp_scheduler)
+            # Single window as string
+            windows = [windows]
 
-    # Parse position constraints (optional)
+        parsed_windows = parse_availability_windows(windows, temp_scheduler)
+        availabilities[panel_name] = parsed_windows
+
+    # Parse optional constraints
     position_constraints = config.get('position_constraints', {})
-
-    # Parse panel conflicts (optional)
     panel_conflicts = config.get('panel_conflicts', [])
 
-    # Create final scheduler with parsed availabilities
-    scheduler = InterviewScheduler(
+    # Create and return the scheduler
+    return InterviewScheduler(
         num_candidates=num_candidates,
         panels=panels,
         order=order,
@@ -236,26 +237,17 @@ def create_scheduler_from_config(config: Dict[str, Any]) -> InterviewScheduler:
         panel_conflicts=panel_conflicts
     )
 
-    return scheduler
-
 
 def main():
-    """Main CLI entry point."""
+    """Main CLI function."""
     parser = argparse.ArgumentParser(
-        description="Interview Scheduler - Optimize candidate interview schedules",
+        description="Interview Scheduler - Command Line Interface",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-Example usage:
-    python cli.py config.yaml
-    python cli.py config.yaml --max-time 120 --quiet
-    python cli.py config.yaml --output schedule.json
-
-The YAML configuration file should contain:
-  - num_candidates: number of candidates
-  - panels: dictionary of panel names and durations
-  - order: preferred order of panels
-  - availabilities: availability windows for each panel
-  - Optional: start_time, end_time, max_gap_minutes, slot_duration_minutes, position_constraints, panel_conflicts
+Examples:
+  python run_cli.py examples/config.yaml
+  python run_cli.py examples/config.yaml --max-time 120 --output results.json
+  python run_cli.py examples/config.yaml --validate-only
         """
     )
 
@@ -265,7 +257,7 @@ The YAML configuration file should contain:
     )
 
     parser.add_argument(
-        '--max-time',
+        '--max-time', '-t',
         type=int,
         default=60,
         help='Maximum solver time in seconds (default: 60)'
@@ -279,7 +271,7 @@ The YAML configuration file should contain:
 
     parser.add_argument(
         '--output', '-o',
-        help='Output file for schedule (JSON format)'
+        help='Save results to JSON file'
     )
 
     parser.add_argument(
@@ -292,34 +284,26 @@ The YAML configuration file should contain:
 
     try:
         # Load and validate configuration
-        if not args.quiet:
-            print(f"Loading configuration from {args.config_file}...")
-
         config = load_config(args.config_file)
-        scheduler = create_scheduler_from_config(config)
-
-        if not args.quiet:
-            print(f"✓ Configuration valid")
-            print(f"  - {scheduler.num_candidates} candidates")
-            print(f"  - {len(scheduler.panels)} panels")
-            print(f"  - Max gap: {scheduler.max_gap_minutes} minutes")
-            print(f"  - Day: {scheduler.slot_to_time(0)} - {scheduler.slot_to_time(scheduler.slots_per_day)}")
 
         if args.validate_only:
-            print("Configuration validation complete!")
+            print("✅ Configuration is valid!")
+            print(f"  - {config['num_candidates']} candidates")
+            print(f"  - {len(config['panels'])} panels")
+            print(f"  - Max gap: {config.get('max_gap_minutes', 15)} minutes")
             return
 
-        # Solve the problem
-        verbose = not args.quiet
-        success = scheduler.solve(max_time_seconds=args.max_time, verbose=verbose)
+        # Create scheduler
+        scheduler = create_scheduler_from_config(config)
+
+        # Solve
+        success = scheduler.solve(max_time_seconds=args.max_time, verbose=not args.quiet)
 
         if success:
-            scheduler.print_solution()
-
-            # Save to file if requested
             if args.output:
+                # Save to JSON file
                 import json
-                result = {
+                results = {
                     'summary': scheduler.get_solution_summary(),
                     'schedules': {
                         f'candidate_{i+1}': scheduler.get_candidate_schedule(i)
@@ -328,17 +312,20 @@ The YAML configuration file should contain:
                 }
 
                 with open(args.output, 'w') as f:
-                    json.dump(result, f, indent=2)
+                    json.dump(results, f, indent=2)
 
-                print(f"\n✓ Schedule saved to {args.output}")
+                print(f"✅ Results saved to {args.output}")
+            else:
+                # Print to console
+                scheduler.print_solution()
         else:
-            print("❌ No feasible solution found!")
+            print("❌ Failed to find a solution!")
             sys.exit(1)
 
     except Exception as e:
-        print(f"❌ Error: {e}", file=sys.stderr)
+        print(f"❌ Error: {e}")
         sys.exit(1)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

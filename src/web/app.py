@@ -7,15 +7,19 @@ and get multiple scheduling solutions.
 """
 
 import os
+import sys
 import tempfile
 import yaml
 import json
 import time
 from flask import Flask, render_template, request, jsonify, send_file
 from werkzeug.utils import secure_filename
-from schedule import InterviewScheduler
-from cli import create_scheduler_from_config, load_config
 import uuid
+
+# Add the parent directory to the path for imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+from scheduler import InterviewScheduler, create_scheduler_from_config, load_config
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
