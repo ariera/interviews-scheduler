@@ -4,264 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interview Scheduler</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            background: #f5f5f5;
-            line-height: 1.6;
-        }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .header h1 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-        }
-        .header p {
-            color: #7f8c8d;
-            font-size: 18px;
-        }
-        .upload-area {
-            border: 2px dashed #bdc3c7;
-            padding: 40px;
-            text-align: center;
-            border-radius: 8px;
-            margin: 20px 0;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .upload-area:hover {
-            border-color: #3498db;
-            background: #f8f9fa;
-        }
-        .upload-area.dragover {
-            border-color: #3498db;
-            background: #ecf0f1;
-        }
-        .btn {
-            background: #3498db;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background 0.3s ease;
-        }
-        .btn:hover {
-            background: #2980b9;
-        }
-        .btn:disabled {
-            background: #bdc3c7;
-            cursor: not-allowed;
-        }
-        .btn-secondary {
-            background: #95a5a6;
-        }
-        .btn-secondary:hover {
-            background: #7f8c8d;
-        }
-        .results {
-            margin-top: 30px;
-        }
-        .schedule-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            background: white;
-        }
-        .schedule-table th, .schedule-table td {
-            border: 1px solid #ddd;
-            padding: 12px;
-            text-align: left;
-        }
-        .schedule-table th {
-            background: #ecf0f1;
-            font-weight: 600;
-        }
-        .schedule-table tr:nth-child(even) {
-            background: #f8f9fa;
-        }
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #7f8c8d;
-        }
-        .error {
-            color: #e74c3c;
-            background: #fdf2f2;
-            padding: 15px;
-            border-radius: 6px;
-            margin: 15px 0;
-            border-left: 4px solid #e74c3c;
-        }
-        .success {
-            color: #27ae60;
-            background: #f0f9f4;
-            padding: 15px;
-            border-radius: 6px;
-            margin: 15px 0;
-            border-left: 4px solid #27ae60;
-        }
-        .solution-tabs {
-            margin: 20px 0;
-        }
-        .tab-buttons {
-            display: flex;
-            border-bottom: 2px solid #ecf0f1;
-            margin-bottom: 20px;
-        }
-        .tab-button {
-            padding: 10px 20px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            transition: all 0.3s ease;
-        }
-        .tab-button.active {
-            border-bottom-color: #3498db;
-            color: #3498db;
-            font-weight: 600;
-        }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
-        .config-preview {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 6px;
-            margin: 15px 0;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            white-space: pre-wrap;
-        }
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
-        }
-        .stat-card {
-            background: #ecf0f1;
-            padding: 20px;
-            border-radius: 6px;
-            text-align: center;
-        }
-        .stat-number {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2c3e50;
-        }
-        .stat-label {
-            color: #7f8c8d;
-            margin-top: 5px;
-        }
-        .file-info {
-            background: #e8f4fd;
-            padding: 10px;
-            border-radius: 6px;
-            margin: 10px 0;
-            border-left: 4px solid #3498db;
-        }
-
-        /* Schedule table styles */
-        .schedule-grid {
-            margin: 20px 0;
-            overflow-x: auto;
-        }
-
-        .schedule-grid table {
-            border-collapse: collapse;
-            width: 100%;
-            min-width: 600px;
-        }
-
-        .schedule-grid th, .schedule-grid td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
-            font-size: 12px;
-        }
-
-        .schedule-grid th {
-            background: #34495e;
-            color: white;
-            font-weight: 600;
-            position: sticky;
-            top: 0;
-        }
-
-        .schedule-grid th:first-child {
-            position: sticky;
-            left: 0;
-            background: #2c3e50;
-            z-index: 10;
-        }
-
-        .schedule-grid td:first-child {
-            position: sticky;
-            left: 0;
-            background: #ecf0f1;
-            font-weight: 600;
-            z-index: 5;
-        }
-
-        .time-slot {
-            background: #f8f9fa;
-            font-weight: 600;
-        }
-
-        .panel-cell {
-            font-weight: 600;
-            color: white;
-            text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
-        }
-
-        .panel-Director { background: #e74c3c; }
-        .panel-Competencies { background: #3498db; }
-        .panel-Customers { background: #2ecc71; }
-        .panel-HR { background: #f39c12; }
-        .panel-Lunch { background: #9b59b6; }
-        .panel-Team { background: #1abc9c; }
-        .panel-Goodbye { background: #34495e; }
-
-        .download-section {
-            margin: 20px 0;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 6px;
-            border-left: 4px solid #27ae60;
-        }
-
-        .btn-download {
-            background: #27ae60;
-            color: white;
-            padding: 8px 16px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            margin-right: 10px;
-        }
-
-        .btn-download:hover {
-            background: #229954;
-        }
-    </style>
+    <link rel="stylesheet" href="scheduler.css">
 </head>
 <body>
     <div class="container">
@@ -272,6 +15,138 @@
                 <a href="help.html" class="btn btn-secondary" style="font-size: 14px; padding: 8px 16px;">📖 YAML Configuration Help</a>
             </div>
             <div id="apiStatus" style="font-size: 12px; color: #7f8c8d; margin-top: 10px;"></div>
+        </div>
+
+        <div id="app">
+            <!-- Loading state -->
+            <div id="vue-loading" style="text-align: center; padding: 40px; color: #7f8c8d;">
+                <p>Loading configuration form...</p>
+            </div>
+
+            <!-- Fallback if Vue fails -->
+            <div id="vue-fallback" style="display: none; background: #fdf2f2; color: #e74c3c; padding: 20px; border-radius: 6px; border-left: 4px solid #e74c3c;">
+                <h3>Form Loading Error</h3>
+                <p>The configuration form could not be loaded. Please refresh the page or try again later.</p>
+                <p>You can still use the YAML file upload below.</p>
+            </div>
+
+            <!-- Vue form content -->
+            <form @submit.prevent class="config-form">
+                <h2>Configure Interview Day</h2>
+
+                <div class="form-section">
+                    <h3>Basic Settings</h3>
+                    <div class="form-row">
+                        <label>
+                            Number of Candidates:
+                            <input type="number" v-model.number="config.num_candidates" min="1" required>
+                        </label>
+                        <label>
+                            Start Time:
+                            <input type="time" v-model="config.start_time">
+                        </label>
+                        <label>
+                            End Time:
+                            <input type="time" v-model="config.end_time">
+                        </label>
+                    </div>
+                    <div class="form-row">
+                        <label>
+                            Slot Duration (minutes):
+                            <input type="number" v-model.number="config.slot_duration_minutes" min="1">
+                        </label>
+                        <label>
+                            Max Gap (minutes):
+                            <input type="number" v-model.number="config.max_gap_minutes" min="0">
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Panels Configuration</h3>
+                    <div class="panel-docs">
+                        <p><strong>Formats:</strong></p>
+                        <ul>
+                            <li><strong>Duration:</strong> "15min", "1h", "1h30min", or just numbers (minutes)</li>
+                            <li><strong>Availability:</strong> "08:30-10:00" or multiple lines for multiple windows</li>
+                            <li><strong>Position:</strong> Assign order position (1, 2, 3...) or leave unspecified</li>
+                        </ul>
+                    </div>
+                    <div class="panel-table">
+                        <div class="panel-header">
+                            <div class="panel-col-header">Panel Name</div>
+                            <div class="panel-col-header">Duration</div>
+                            <div class="panel-col-header">Availability</div>
+                            <div class="panel-col-header">Position</div>
+                            <div class="panel-col-header">Actions</div>
+                        </div>
+                                                <div v-for="(name, idx) in panelNames" :key="`panel-${idx}`" class="panel-row" :style="{ order: getPanelDisplayOrder(name) }">
+                            <input v-model="panelNames[idx]" placeholder="e.g. Director" @input="updatePanels" class="panel-name">
+                            <input v-model="panelDurations[idx]" placeholder="e.g. 1h" @input="updatePanelDuration(idx)" class="panel-duration">
+                            <textarea :value="getAvailabilityForPanel(name)" @input="updateAvailabilityForPanel(name, $event)"
+                                      placeholder="e.g. 08:30-10:00&#10;or multiple lines"
+                                      class="panel-availability"></textarea>
+                            <select v-model="panelOrderPositions[name]" @change="updatePanelOrder" class="panel-position-select">
+                                <option value="">Unspecified</option>
+                                <option v-for="pos in panelNames.length" :key="pos" :value="pos">
+                                    {{ pos }}
+                                </option>
+                            </select>
+                            <button type="button" @click="removePanel(idx)" class="btn-remove">Remove</button>
+                        </div>
+                    </div>
+                    <button type="button" @click="addPanel" class="btn-add">Add Panel</button>
+                </div>
+
+                <div class="form-section">
+                    <h3>Position Constraints</h3>
+                    <div v-for="(entry, index) in positionConstraintEntries" :key="index" class="constraint-row">
+                        <select v-model="entry.panel" @change="updatePositionConstraints" class="constraint-select">
+                            <option value="">Select Panel</option>
+                            <option v-for="panelName in Object.keys(config.panels)" :key="panelName" :value="panelName">
+                                {{ panelName }}
+                            </option>
+                        </select>
+                        <select v-model="entry.value" @change="updatePositionConstraints" class="constraint-select">
+                            <option value="first">First</option>
+                            <option value="last">Last</option>
+                            <option value="0">Position 0</option>
+                            <option value="1">Position 1</option>
+                            <option value="2">Position 2</option>
+                            <option value="3">Position 3</option>
+                            <option value="4">Position 4</option>
+                            <option value="5">Position 5</option>
+                        </select>
+                        <button type="button" @click="removePositionConstraint(index)" class="btn-remove">Remove</button>
+                    </div>
+                    <button type="button" @click="addPositionConstraint" class="btn-add">Add Position Constraint</button>
+                </div>
+
+                <div class="form-section">
+                    <h3>Panel Conflicts (Cannot Run Simultaneously)</h3>
+                    <div v-for="(entry, idx) in conflictEntries" :key="idx" class="conflict-row">
+                        <select v-model="entry.panel1" @change="updatePanelConflicts" class="conflict-select">
+                            <option value="">Select Panel 1</option>
+                            <option v-for="panelName in Object.keys(config.panels)" :key="panelName" :value="panelName">
+                                {{ panelName }}
+                            </option>
+                        </select>
+                        <span class="conflict-separator">conflicts with</span>
+                        <select v-model="entry.panel2" @change="updatePanelConflicts" class="conflict-select">
+                            <option value="">Select Panel 2</option>
+                            <option v-for="panelName in Object.keys(config.panels)" :key="panelName" :value="panelName">
+                                {{ panelName }}
+                            </option>
+                        </select>
+                        <button type="button" @click="removeConflictGroup(idx)" class="btn-remove">Remove</button>
+                    </div>
+                    <button type="button" @click="addConflictGroup" class="btn-add">Add Conflict Group</button>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" @click="downloadYAML" class="btn btn-secondary">Download as YAML</button>
+                </div>
+            </form>
         </div>
 
         <div class="upload-area" id="uploadArea">
@@ -291,10 +166,12 @@
         <a id="csvDownload" style="display: none;" download="interview_schedule.csv"></a>
     </div>
 
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+    <script src="scheduler-app.js"></script>
     <script>
+        // Integration script to connect Vue app with existing functionality
         let selectedFile = null;
-        let selectedConfig = null;
 
         // Auto-detect API URL based on environment
         const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -325,6 +202,15 @@
 
         // Check API health on load
         window.addEventListener('load', checkApiHealth);
+
+        // Enable buttons when Vue app is ready
+        function enableButtons() {
+            document.getElementById('generateBtn').disabled = false;
+            document.getElementById('validateBtn').disabled = false;
+        }
+
+        // Wait for Vue app to be ready
+        setTimeout(enableButtons, 100);
 
         // Drag and drop functionality
         const uploadArea = document.getElementById('uploadArea');
@@ -360,31 +246,29 @@
             if (!file) return;
 
             selectedFile = file;
-            document.getElementById('generateBtn').disabled = false;
-            document.getElementById('validateBtn').disabled = false;
 
             // Show file info
             const fileInfo = document.getElementById('fileInfo');
             fileInfo.style.display = 'block';
             fileInfo.innerHTML = `📄 Selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
 
-            // Parse YAML
+            // Parse YAML and populate form
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    selectedConfig = jsyaml.load(e.target.result);
-                    fileInfo.innerHTML += ' ✅ Valid YAML format';
+                    const yamlData = jsyaml.load(e.target.result);
+                    window.populateFormFromYAML(yamlData);
+                    fileInfo.innerHTML += ' ✅ Valid YAML format - Form populated!';
                 } catch (error) {
                     fileInfo.innerHTML += ' ❌ Invalid YAML format';
-                    document.getElementById('generateBtn').disabled = true;
-                    document.getElementById('validateBtn').disabled = true;
+                    console.error('YAML parsing error:', error);
                 }
             };
             reader.readAsText(file);
         }
 
         async function validateConfig() {
-            if (!selectedConfig) return;
+            if (!window.vueApp) return;
 
             const btn = document.getElementById('validateBtn');
             const results = document.getElementById('results');
@@ -394,12 +278,13 @@
             results.innerHTML = '<div class="loading">Validating configuration...</div>';
 
             try {
+                const config = window.vueApp.getConfig();
                 const response = await fetch(`${API_URL}/api/validate`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ config: selectedConfig })
+                    body: JSON.stringify({ config: config })
                 });
 
                 const data = await response.json();
@@ -418,7 +303,7 @@
         }
 
         async function generateSchedule() {
-            if (!selectedConfig) return;
+            if (!window.vueApp) return;
 
             const btn = document.getElementById('generateBtn');
             const results = document.getElementById('results');
@@ -428,13 +313,14 @@
             results.innerHTML = '<div class="loading">Generating optimal schedules...</div>';
 
             try {
+                const config = window.vueApp.getConfig();
                 const response = await fetch(`${API_URL}/api/schedule-multiple`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        config: selectedConfig,
+                        config: config,
                         max_solutions: 3
                     })
                 });
