@@ -4,6 +4,10 @@
 
 A powerful constraint-based interview scheduling system that uses Google OR-Tools CP-SAT solver to optimize interview schedules with complex constraints.
 
+Try it here
+
+[https://ariera.github.io/interviews-scheduler/](https://ariera.github.io/interviews-scheduler/)
+
 ## Features
 
 - **Flexible Configuration**: YAML-based configuration for easy setup
