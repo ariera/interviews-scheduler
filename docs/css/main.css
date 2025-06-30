@@ -1,0 +1,376 @@
+/* Interview Scheduler - Main Styles */
+
+/* Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: #f5f5f5;
+    min-height: 100vh;
+    padding: 20px;
+    line-height: 1.6;
+    color: #2c3e50;
+}
+
+/* Container Layout */
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+/* Header */
+.header {
+    background: #34495e;
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.header h1 {
+    font-size: 1.5rem;
+    margin: 0;
+    font-weight: 600;
+}
+
+.header p {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    margin: 0;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+}
+
+#apiStatus {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+/* Loading and Error States */
+#vue-loading {
+    text-align: center;
+    padding: 40px;
+    color: #7f8c8d;
+}
+
+#vue-fallback {
+    background: #fdf2f2;
+    color: #e74c3c;
+    padding: 20px;
+    border-radius: 6px;
+    border-left: 4px solid #e74c3c;
+    margin: 20px;
+}
+
+/* Upload Area */
+.upload-area {
+    border: 2px dashed #bdc3c7;
+    border-radius: 8px;
+    padding: 40px;
+    text-align: center;
+    margin: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+}
+
+.upload-area:hover {
+    border-color: #3498db;
+    background: #e3f2fd;
+}
+
+.upload-area.dragover {
+    border-color: #2980b9;
+    background: #bbdefb;
+    transform: scale(1.02);
+}
+
+.upload-area p {
+    margin: 5px 0;
+    font-weight: 500;
+}
+
+/* File Info */
+.file-info {
+    margin: 20px;
+    padding: 15px;
+    background: #e8f5e8;
+    border-radius: 6px;
+    border-left: 4px solid #27ae60;
+}
+
+/* Results */
+.results {
+    margin: 20px;
+    padding: 20px;
+}
+
+.success {
+    background: #d4edda;
+    color: #155724;
+    padding: 15px;
+    border-radius: 6px;
+    border-left: 4px solid #28a745;
+    margin-bottom: 20px;
+}
+
+.error {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 15px;
+    border-radius: 6px;
+    border-left: 4px solid #dc3545;
+    margin-bottom: 20px;
+}
+
+.loading {
+    background: #d1ecf1;
+    color: #0c5460;
+    padding: 15px;
+    border-radius: 6px;
+    border-left: 4px solid #17a2b8;
+    margin-bottom: 20px;
+}
+
+/* Statistics Cards */
+.stats {
+    display: flex;
+    gap: 15px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+}
+
+.stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    flex: 1;
+    min-width: 120px;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #3498db;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Solution Tabs */
+.solution-tabs {
+    margin: 20px 0;
+}
+
+.tab-buttons {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #ecf0f1;
+}
+
+.tab-button {
+    padding: 12px 20px;
+    background: #ecf0f1;
+    border: none;
+    border-radius: 6px 6px 0 0;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.tab-button.active {
+    background: #3498db;
+    color: white;
+}
+
+.tab-button:hover:not(.active) {
+    background: #d5dbdb;
+}
+
+.tab-content {
+    display: none;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 0 6px 6px 6px;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Download Section */
+.download-section {
+    background: #e8f4fd;
+    padding: 15px;
+    border-radius: 6px;
+    margin: 15px 0;
+    border-left: 4px solid #3498db;
+}
+
+.btn-download {
+    background: #27ae60;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 10px;
+    margin-top: 5px;
+    font-size: 14px;
+    transition: background 0.3s ease;
+}
+
+.btn-download:hover {
+    background: #219a52;
+}
+
+/* Schedule Grid */
+.schedule-grid {
+    overflow-x: auto;
+    margin: 20px 0;
+}
+
+.schedule-grid table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.schedule-grid th,
+.schedule-grid td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+.schedule-grid th {
+    background: #34495e;
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.schedule-grid .time-slot {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #2c3e50;
+    text-align: center;
+    min-width: 80px;
+}
+
+.schedule-grid .panel-cell {
+    background: #e3f2fd;
+    color: #1976d2;
+    font-weight: 500;
+    text-align: center;
+    border-radius: 4px;
+}
+
+/* Panel Color Classes */
+.panel-Director { background: #ffebee !important; color: #c62828 !important; }
+.panel-Competencies { background: #e8f5e8 !important; color: #2e7d32 !important; }
+.panel-HR { background: #fff3e0 !important; color: #ef6c00 !important; }
+.panel-Lunch { background: #f3e5f5 !important; color: #7b1fa2 !important; }
+.panel-Team { background: #e0f2f1 !important; color: #00695c !important; }
+.panel-Goodbye { background: #fce4ec !important; color: #ad1457 !important; }
+
+/* Configuration Preview */
+.config-preview {
+    background: #2c3e50;
+    color: #ecf0f1;
+    padding: 20px;
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    margin: 15px 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .container {
+        border-radius: 8px;
+    }
+
+    .header {
+        padding: 15px;
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+    }
+
+    .header-left,
+    .header-right {
+        justify-content: center;
+    }
+
+    .header h1 {
+        font-size: 1.3rem;
+    }
+
+    .stats {
+        flex-direction: column;
+    }
+
+    .stat-card {
+        min-width: auto;
+    }
+
+    .tab-buttons {
+        flex-direction: column;
+    }
+
+    .tab-button {
+        border-radius: 6px;
+        margin-bottom: 5px;
+    }
+
+    .schedule-grid {
+        font-size: 14px;
+    }
+
+    .schedule-grid th,
+    .schedule-grid td {
+        padding: 8px;
+    }
+}
