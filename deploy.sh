@@ -1,163 +1,116 @@
 #!/bin/bash
 
 # Interview Scheduler Deployment Script
-# Usage: ./deploy.sh [dev|prod] [build|up|down|logs|restart]
+# This script helps you deploy your interview scheduler online
 
 set -e
 
-ENVIRONMENT=${1:-prod}
-ACTION=${2:-up}
+echo "🚀 Interview Scheduler Deployment Script"
+echo "========================================"
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-
-# Function to print colored output
-print_status() {
-    echo -e "${BLUE}[INFO]${NC} $1"
-}
-
-print_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
-}
-
-print_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
-}
-
-print_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-}
-
-# Function to check if Docker is running
-check_docker() {
-    if ! docker info > /dev/null 2>&1; then
-        print_error "Docker is not running. Please start Docker and try again."
-        exit 1
-    fi
-}
-
-# Function to create necessary directories
-create_directories() {
-    print_status "Creating necessary directories..."
-    mkdir -p logs/nginx
-    mkdir -p uploads
-    chmod 755 logs logs/nginx uploads
-}
-
-# Function to check environment files
-check_env_files() {
-    if [ "$ENVIRONMENT" = "prod" ]; then
-        if [ ! -f "production.env" ]; then
-            print_warning "production.env not found. Creating from template..."
-            cp production.env.example production.env
-            print_warning "Please edit production.env with your production settings!"
-        fi
-    else
-        if [ ! -f "development.env" ]; then
-            print_warning "development.env not found. Creating from template..."
-            cp development.env.example development.env
-        fi
-    fi
-}
-
-# Function to deploy
-deploy() {
-    local compose_file="docker-compose.yaml"
-    if [ "$ENVIRONMENT" = "dev" ]; then
-        compose_file="docker-compose.dev.yaml"
-    fi
-
-    case $ACTION in
-        "build")
-            print_status "Building Docker images for $ENVIRONMENT environment..."
-            docker-compose -f $compose_file build
-            print_success "Build completed successfully!"
-            ;;
-        "up")
-            print_status "Starting services for $ENVIRONMENT environment..."
-            if [ "$ENVIRONMENT" = "prod" ]; then
-                docker-compose -f $compose_file up -d
-                print_success "Services started in background!"
-                print_status "Access the application at: http://localhost:8080"
-            else
-                docker-compose -f $compose_file up
-            fi
-            ;;
-        "down")
-            print_status "Stopping services..."
-            docker-compose -f $compose_file down
-            print_success "Services stopped!"
-            ;;
-        "restart")
-            print_status "Restarting services..."
-            docker-compose -f $compose_file down
-            docker-compose -f $compose_file up -d
-            print_success "Services restarted!"
-            ;;
-        "logs")
-            print_status "Showing logs for $ENVIRONMENT environment..."
-            docker-compose -f $compose_file logs -f
-            ;;
-        "clean")
-            print_status "Cleaning up Docker resources..."
-            docker-compose -f $compose_file down -v
-            docker system prune -f
-            print_success "Cleanup completed!"
-            ;;
-        "status")
-            print_status "Checking service status..."
-            docker-compose -f $compose_file ps
-            ;;
-        *)
-            print_error "Unknown action: $ACTION"
-            print_status "Available actions: build, up, down, restart, logs, clean, status"
-            exit 1
-            ;;
-    esac
-}
-
-# Main execution
-main() {
-    print_status "Interview Scheduler Deployment Script"
-    print_status "Environment: $ENVIRONMENT"
-    print_status "Action: $ACTION"
-    echo
-
-    check_docker
-    create_directories
-    check_env_files
-    deploy
-}
-
-# Show usage if no arguments provided
-if [ $# -eq 0 ]; then
-    echo "Interview Scheduler Deployment Script"
-    echo ""
-    echo "Usage: $0 [dev|prod] [build|up|down|logs|restart|clean|status]"
-    echo ""
-    echo "Environments:"
-    echo "  dev   - Development environment with live reload"
-    echo "  prod  - Production environment (default)"
-    echo ""
-    echo "Actions:"
-    echo "  build   - Build Docker images"
-    echo "  up      - Start services"
-    echo "  down    - Stop services"
-    echo "  restart - Restart services"
-    echo "  logs    - Show service logs"
-    echo "  clean   - Clean up Docker resources"
-    echo "  status  - Show service status"
-    echo ""
-    echo "Examples:"
-    echo "  $0 prod up      # Start production services"
-    echo "  $0 dev up       # Start development services"
-    echo "  $0 prod logs    # Show production logs"
-    echo "  $0 dev restart  # Restart development services"
-    exit 1
+# Check if git is initialized
+if [ ! -d ".git" ]; then
+    echo "📁 Initializing git repository..."
+    git init
+    git add .
+    git commit -e "Initial commit"
+    echo "✅ Git repository initialized"
+else
+    echo "✅ Git repository already exists"
 fi
 
-main
+# Check if remote origin exists
+if ! git remote get-url origin > /dev/null 2>&1; then
+    echo ""
+    echo "🔗 Please set up your GitHub repository:"
+    echo "1. Create a new repository on GitHub"
+    echo "2. Run: git remote add origin https://github.com/YOUR_USERNAME/interview-scheduler.git"
+    echo "3. Run: git push -u origin main"
+    echo ""
+    read -p "Have you created the GitHub repository? (y/n): " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        echo "Please run the git commands above to connect to your repository."
+    fi
+else
+    echo "✅ GitHub remote already configured"
+fi
+
+echo ""
+echo "📋 Deployment Options:"
+echo "1. GitHub Pages + Render (Recommended - Free)"
+echo "2. Railway (All-in-one - Free tier)"
+echo "3. Manual deployment guide"
+
+read -p "Choose deployment option (1-3): " -n 1 -r
+echo
+
+case $REPLY in
+    1)
+        echo ""
+        echo "🎯 GitHub Pages + Render Deployment"
+        echo "=================================="
+        echo ""
+        echo "Step 1: Deploy Backend to Render"
+        echo "1. Go to https://render.com"
+        echo "2. Sign up with your GitHub account"
+        echo "3. Click 'New Web Service'"
+        echo "4. Connect your GitHub repository"
+        echo "5. Configure:"
+        echo "   - Name: interview-scheduler-api"
+        echo "   - Root Directory: api"
+        echo "   - Runtime: Python 3"
+        echo "   - Build Command: pip install -r requirements.txt"
+        echo "   - Start Command: gunicorn app:app"
+        echo ""
+        echo "Step 2: Update API URL"
+        echo "After Render deployment, update the API_URL in docs/index.html"
+        echo ""
+        echo "Step 3: Enable GitHub Pages"
+        echo "1. Go to your repository settings"
+        echo "2. Scroll to 'Pages' section"
+        echo "3. Source: Deploy from a branch"
+        echo "4. Branch: main, Folder: /docs"
+        echo ""
+        echo "Step 4: Push Changes"
+        echo "git add ."
+        echo "git commit -m 'Add deployment configuration'"
+        echo "git push origin main"
+        ;;
+    2)
+        echo ""
+        echo "🚂 Railway Deployment"
+        echo "===================="
+        echo ""
+        echo "1. Go to https://railway.app"
+        echo "2. Sign up with your GitHub account"
+        echo "3. Click 'New Project'"
+        echo "4. Select 'Deploy from GitHub repo'"
+        echo "5. Select your interview-scheduler repository"
+        echo "6. Railway will auto-detect your Flask app"
+        echo "7. Deploy with one click!"
+        echo ""
+        echo "Your app will be available at: https://your-app-name.railway.app"
+        ;;
+    3)
+        echo ""
+        echo "📖 Manual Deployment Guide"
+        echo "========================="
+        echo ""
+        echo "See deploy_github_pages.md for detailed instructions"
+        ;;
+    *)
+        echo "Invalid option. Please run the script again."
+        exit 1
+        ;;
+esac
+
+echo ""
+echo "🎉 Deployment instructions completed!"
+echo ""
+echo "Next steps:"
+echo "1. Follow the deployment instructions above"
+echo "2. Test your deployed application"
+echo "3. Share the URL with others!"
+echo ""
+echo "For help, check the documentation in deploy_github_pages.md"

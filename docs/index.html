@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interview Scheduler</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+            line-height: 1.6;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .header p {
+            color: #7f8c8d;
+            font-size: 18px;
+        }
+        .upload-area {
+            border: 2px dashed #bdc3c7;
+            padding: 40px;
+            text-align: center;
+            border-radius: 8px;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .upload-area:hover {
+            border-color: #3498db;
+            background: #f8f9fa;
+        }
+        .upload-area.dragover {
+            border-color: #3498db;
+            background: #ecf0f1;
+        }
+        .btn {
+            background: #3498db;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s ease;
+        }
+        .btn:hover {
+            background: #2980b9;
+        }
+        .btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+        .btn-secondary {
+            background: #95a5a6;
+        }
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+        .results {
+            margin-top: 30px;
+        }
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+        }
+        .schedule-table th, .schedule-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .schedule-table th {
+            background: #ecf0f1;
+            font-weight: 600;
+        }
+        .schedule-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+        .error {
+            color: #e74c3c;
+            background: #fdf2f2;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border-left: 4px solid #e74c3c;
+        }
+        .success {
+            color: #27ae60;
+            background: #f0f9f4;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border-left: 4px solid #27ae60;
+        }
+        .solution-tabs {
+            margin: 20px 0;
+        }
+        .tab-buttons {
+            display: flex;
+            border-bottom: 2px solid #ecf0f1;
+            margin-bottom: 20px;
+        }
+        .tab-button {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            border-bottom-color: #3498db;
+            color: #3498db;
+            font-weight: 600;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .config-preview {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: #ecf0f1;
+            padding: 20px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .stat-label {
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        .file-info {
+            background: #e8f4fd;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            border-left: 4px solid #3498db;
+        }
+
+        /* Schedule table styles */
+        .schedule-grid {
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        .schedule-grid table {
+            border-collapse: collapse;
+            width: 100%;
+            min-width: 600px;
+        }
+
+        .schedule-grid th, .schedule-grid td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .schedule-grid th {
+            background: #34495e;
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        .schedule-grid th:first-child {
+            position: sticky;
+            left: 0;
+            background: #2c3e50;
+            z-index: 10;
+        }
+
+        .schedule-grid td:first-child {
+            position: sticky;
+            left: 0;
+            background: #ecf0f1;
+            font-weight: 600;
+            z-index: 5;
+        }
+
+        .time-slot {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .panel-cell {
+            font-weight: 600;
+            color: white;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
+        }
+
+        .panel-Director { background: #e74c3c; }
+        .panel-Competencies { background: #3498db; }
+        .panel-Customers { background: #2ecc71; }
+        .panel-HR { background: #f39c12; }
+        .panel-Lunch { background: #9b59b6; }
+        .panel-Team { background: #1abc9c; }
+        .panel-Goodbye { background: #34495e; }
+
+        .download-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #27ae60;
+        }
+
+        .btn-download {
+            background: #27ae60;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+
+        .btn-download:hover {
+            background: #229954;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Interview Scheduler</h1>
+            <p>Upload a YAML configuration file to generate optimal interview schedules</p>
+            <div id="apiStatus" style="font-size: 12px; color: #7f8c8d; margin-top: 10px;"></div>
+        </div>
+
+        <div class="upload-area" id="uploadArea">
+            <p>📁 Click to select a YAML file or drag and drop</p>
+            <p style="font-size: 14px; color: #7f8c8d;">Supports .yaml and .yml files</p>
+            <input type="file" id="fileInput" accept=".yaml,.yml" style="display: none;" onchange="handleFileSelect(event)">
+        </div>
+
+        <div id="fileInfo" class="file-info" style="display: none;"></div>
+
+        <button class="btn" onclick="generateSchedule()" id="generateBtn" disabled>Generate Schedule</button>
+        <button class="btn btn-secondary" onclick="validateConfig()" id="validateBtn" disabled>Validate Config</button>
+
+        <div id="results" class="results"></div>
+
+        <!-- Hidden download link for CSV -->
+        <a id="csvDownload" style="display: none;" download="interview_schedule.csv"></a>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+    <script>
+        let selectedFile = null;
+        let selectedConfig = null;
+
+        // Auto-detect API URL based on environment
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const API_URL = isLocalhost ? 'http://localhost:5001' : 'https://your-render-app.onrender.com';
+
+        console.log('🌐 API URL:', API_URL);
+        console.log('📍 Environment:', isLocalhost ? 'Local Development' : 'Production');
+
+        // Display API status in UI
+        const apiStatus = document.getElementById('apiStatus');
+        apiStatus.innerHTML = `🔗 API: ${isLocalhost ? 'Local (localhost:5001)' : 'Production (Render)'}`;
+
+        // Check API health on load
+        async function checkApiHealth() {
+            try {
+                const response = await fetch(`${API_URL}/api/health`);
+                const data = await response.json();
+                console.log('✅ API Health:', data);
+                apiStatus.innerHTML = `🔗 API: ${isLocalhost ? 'Local (localhost:5001)' : 'Production (Render)'} ✅ Connected`;
+            } catch (error) {
+                console.warn('❌ API not available:', error.message);
+                apiStatus.innerHTML = `🔗 API: ${isLocalhost ? 'Local (localhost:5001)' : 'Production (Render)'} ❌ Not Connected`;
+                if (isLocalhost) {
+                    apiStatus.innerHTML += '<br><small style="color: #e74c3c;">Make sure to run: cd api && python app.py</small>';
+                }
+            }
+        }
+
+        // Check API health on load
+        window.addEventListener('load', checkApiHealth);
+
+        // Drag and drop functionality
+        const uploadArea = document.getElementById('uploadArea');
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        function handleFileSelect(event) {
+            handleFile(event.target.files[0]);
+        }
+
+        function handleFile(file) {
+            if (!file) return;
+
+            selectedFile = file;
+            document.getElementById('generateBtn').disabled = false;
+            document.getElementById('validateBtn').disabled = false;
+
+            // Show file info
+            const fileInfo = document.getElementById('fileInfo');
+            fileInfo.style.display = 'block';
+            fileInfo.innerHTML = `📄 Selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+
+            // Parse YAML
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    selectedConfig = jsyaml.load(e.target.result);
+                    fileInfo.innerHTML += ' ✅ Valid YAML format';
+                } catch (error) {
+                    fileInfo.innerHTML += ' ❌ Invalid YAML format';
+                    document.getElementById('generateBtn').disabled = true;
+                    document.getElementById('validateBtn').disabled = true;
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        async function validateConfig() {
+            if (!selectedConfig) return;
+
+            const btn = document.getElementById('validateBtn');
+            const results = document.getElementById('results');
+
+            btn.disabled = true;
+            btn.textContent = 'Validating...';
+            results.innerHTML = '<div class="loading">Validating configuration...</div>';
+
+            try {
+                const response = await fetch(`${API_URL}/api/validate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ config: selectedConfig })
+                });
+
+                const data = await response.json();
+
+                if (data.valid) {
+                    results.innerHTML = `<div class="success">✅ ${data.message}</div>`;
+                } else {
+                    results.innerHTML = `<div class="error">❌ ${data.error}</div>`;
+                }
+            } catch (error) {
+                results.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Validate Config';
+            }
+        }
+
+        async function generateSchedule() {
+            if (!selectedConfig) return;
+
+            const btn = document.getElementById('generateBtn');
+            const results = document.getElementById('results');
+
+            btn.disabled = true;
+            btn.textContent = 'Generating...';
+            results.innerHTML = '<div class="loading">Generating optimal schedules...</div>';
+
+            try {
+                const response = await fetch(`${API_URL}/api/schedule-multiple`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        config: selectedConfig,
+                        max_solutions: 3
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayResults(data);
+                } else {
+                    results.innerHTML = `<div class="error">❌ Error: ${data.error}</div>`;
+                }
+            } catch (error) {
+                results.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Generate Schedule';
+            }
+        }
+
+        function displayResults(data) {
+            const results = document.getElementById('results');
+
+            let html = `<div class="success">✅ Generated ${data.num_solutions} optimal schedules!</div>`;
+
+            // Stats
+            html += '<div class="stats">';
+            html += `<div class="stat-card">
+                <div class="stat-number">${data.summary.num_candidates}</div>
+                <div class="stat-label">Candidates</div>
+            </div>`;
+            html += `<div class="stat-card">
+                <div class="stat-number">${data.summary.num_panels}</div>
+                <div class="stat-label">Panels</div>
+            </div>`;
+            html += `<div class="stat-card">
+                <div class="stat-number">${data.summary.max_gap}min</div>
+                <div class="stat-label">Max Gap</div>
+            </div>`;
+            html += '</div>';
+
+            // Solution tabs
+            if (data.solutions.length > 1) {
+                html += '<div class="solution-tabs">';
+                html += '<div class="tab-buttons">';
+                data.solutions.forEach((solution, index) => {
+                    html += `<button class="tab-button ${index === 0 ? 'active' : ''}" onclick="showTab(${index})">Solution ${index + 1}</button>`;
+                });
+                html += '</div>';
+
+                data.solutions.forEach((solution, index) => {
+                    html += `<div class="tab-content ${index === 0 ? 'active' : ''}" id="tab-${index}">`;
+                    html += displaySolution(solution);
+                    html += '</div>';
+                });
+                html += '</div>';
+            } else {
+                html += displaySolution(data.solutions[0]);
+            }
+
+            results.innerHTML = html;
+        }
+
+        function displaySolution(solution) {
+            let html = '<h3>Schedule Details</h3>';
+
+            // Download section
+            html += '<div class="download-section">';
+            html += '<strong>📥 Download Options:</strong><br>';
+            html += `<button class="btn-download" onclick="downloadCSV(${JSON.stringify(solution).replace(/"/g, '&quot;')})">Download as CSV</button>`;
+            html += `<button class="btn-download" onclick="downloadJSON(${JSON.stringify(solution).replace(/"/g, '&quot;')})">Download as JSON</button>`;
+            html += '</div>';
+
+            // Create schedule grid
+            html += '<div class="schedule-grid">';
+            html += createScheduleTable(solution);
+            html += '</div>';
+
+            // Summary section
+            if (solution.summary) {
+                html += '<h4>Summary</h4>';
+                html += '<div class="config-preview">';
+                html += JSON.stringify(solution.summary, null, 2);
+                html += '</div>';
+            }
+
+            return html;
+        }
+
+        function createScheduleTable(solution) {
+            const schedules = solution.schedules;
+            const candidates = Object.keys(schedules);
+
+            if (candidates.length === 0) {
+                return '<p>No schedule data available</p>';
+            }
+
+            // Get all time slots from ALL candidates' schedules to ensure we cover all panels
+            let globalStartTime = null;
+            let globalEndTime = null;
+
+            candidates.forEach(candidate => {
+                const candidateSchedule = schedules[candidate];
+                if (Array.isArray(candidateSchedule) && candidateSchedule.length > 0) {
+                    const candidateStart = new Date(`2000-01-01T${candidateSchedule[0].start_time}`);
+                    const candidateEnd = new Date(`2000-01-01T${candidateSchedule[candidateSchedule.length - 1].end_time}`);
+
+                    if (globalStartTime === null || candidateStart < globalStartTime) {
+                        globalStartTime = candidateStart;
+                    }
+                    if (globalEndTime === null || candidateEnd > globalEndTime) {
+                        globalEndTime = candidateEnd;
+                    }
+                }
+            });
+
+            if (!globalStartTime || !globalEndTime) {
+                return '<p>Invalid schedule format</p>';
+            }
+
+            // Create time slots (15-minute intervals) covering ALL candidates
+            const timeSlots = [];
+            let currentTime = new Date(globalStartTime);
+            while (currentTime < globalEndTime) {
+                timeSlots.push(currentTime.toTimeString().slice(0, 5));
+                currentTime.setMinutes(currentTime.getMinutes() + 15);
+            }
+
+            // Create table
+            let table = '<table>';
+
+            // Header row with candidate names
+            table += '<tr><th>Time</th>';
+            candidates.forEach(candidate => {
+                table += `<th>${candidate.replace('candidate_', 'Candidate ')}</th>`;
+            });
+            table += '</tr>';
+
+            // Time slot rows
+            timeSlots.forEach(timeSlot => {
+                table += '<tr>';
+                table += `<td class="time-slot">${timeSlot}</td>`;
+
+                candidates.forEach(candidate => {
+                    const candidateSchedule = schedules[candidate];
+                    const panelAtTime = findPanelAtTime(candidateSchedule, timeSlot);
+
+                    if (panelAtTime) {
+                        const panelClass = `panel-${panelAtTime.panel}`;
+                        table += `<td class="panel-cell ${panelClass}">${panelAtTime.panel}</td>`;
+                    } else {
+                        table += '<td></td>';
+                    }
+                });
+
+                table += '</tr>';
+            });
+
+            table += '</table>';
+            return table;
+        }
+
+        function findPanelAtTime(schedule, timeSlot) {
+            if (!Array.isArray(schedule)) return null;
+
+            for (const session of schedule) {
+                const sessionStart = session.start_time;
+                const sessionEnd = session.end_time;
+
+                if (timeSlot >= sessionStart && timeSlot < sessionEnd) {
+                    return session;
+                }
+            }
+            return null;
+        }
+
+        function downloadCSV(solution) {
+            const schedules = solution.schedules;
+            const candidates = Object.keys(schedules);
+
+            if (candidates.length === 0) {
+                alert('No schedule data to download');
+                return;
+            }
+
+            // Create CSV content
+            let csv = 'Time';
+            candidates.forEach(candidate => {
+                csv += `,${candidate.replace('candidate_', 'Candidate ')}`;
+            });
+            csv += '\n';
+
+            // Get time slots from ALL candidates to ensure we cover all panels
+            let globalStartTime = null;
+            let globalEndTime = null;
+
+            candidates.forEach(candidate => {
+                const candidateSchedule = schedules[candidate];
+                if (Array.isArray(candidateSchedule) && candidateSchedule.length > 0) {
+                    const candidateStart = new Date(`2000-01-01T${candidateSchedule[0].start_time}`);
+                    const candidateEnd = new Date(`2000-01-01T${candidateSchedule[candidateSchedule.length - 1].end_time}`);
+
+                    if (globalStartTime === null || candidateStart < globalStartTime) {
+                        globalStartTime = candidateStart;
+                    }
+                    if (globalEndTime === null || candidateEnd > globalEndTime) {
+                        globalEndTime = candidateEnd;
+                    }
+                }
+            });
+
+            if (globalStartTime && globalEndTime) {
+                let currentTime = new Date(globalStartTime);
+                while (currentTime < globalEndTime) {
+                    const timeSlot = currentTime.toTimeString().slice(0, 5);
+                    csv += timeSlot;
+
+                    candidates.forEach(candidate => {
+                        const candidateSchedule = schedules[candidate];
+                        const panelAtTime = findPanelAtTime(candidateSchedule, timeSlot);
+                        csv += `,${panelAtTime ? panelAtTime.panel : ''}`;
+                    });
+
+                    csv += '\n';
+                    currentTime.setMinutes(currentTime.getMinutes() + 15);
+                }
+            }
+
+            // Create and trigger download
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.getElementById('csvDownload');
+            a.href = url;
+            a.download = `interview_schedule_${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function downloadJSON(solution) {
+            const dataStr = JSON.stringify(solution, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.getElementById('csvDownload');
+            a.href = url;
+            a.download = `interview_schedule_${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function showTab(index) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(`tab-${index}`).classList.add('active');
+            document.querySelectorAll('.tab-button')[index].classList.add('active');
+        }
+    </script>
+</body>
+</html>

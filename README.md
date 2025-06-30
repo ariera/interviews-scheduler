@@ -1,6 +1,6 @@
 # Interview Scheduler
 
-> **Disclaimer**: This repository has been entirely vibe-coded. While functional and feature-complete, it represents a rapid development approach focused on getting things working rather than following traditional software engineering practices. Use at your own discretion.
+> **Disclaimer**: This repository has been entirely vibe-coded. While functional and feature-complete, it represents a rapid development approach focused on getting things working rather than following traditional software engineering practices. It's been a fun experiment! Use at your own discretion.
 
 A powerful constraint-based interview scheduling system that uses Google OR-Tools CP-SAT solver to optimize interview schedules with complex constraints.
 
@@ -11,47 +11,48 @@ A powerful constraint-based interview scheduling system that uses Google OR-Tool
 - **Multiple Solutions**: Generate multiple optimal schedules
 - **Web Interface**: Modern, responsive web UI with drag & drop file upload
 - **CLI Tool**: Command-line interface for automation and scripting
-- **Docker Support**: Production-ready Docker deployment
 
 ## Quick Start
 
-### Using Docker (Recommended)
+### Option 1: Command Line Interface (CLI)
 
-1. **Clone the repository:**
-   ```bash
-   git clone <repository-url>
-   cd interview_scheduler
-   ```
+The fastest way to get started:
 
-2. **Deploy with Docker:**
-   ```bash
-   # Development environment
-   ./deploy.sh dev up
+```bash
+# Install dependencies
+pip install -r requirements.txt
 
-   # Production environment
-   ./deploy.sh prod up
-   ```
+# Run with example configuration
+python run_cli.py examples/config-Thu-c=3.yaml
 
-3. **Access the web interface:**
-   - Development: http://localhost:5001
-   - Production: http://localhost:8080
+# Try different examples
+python run_cli.py examples/complete-example.yaml
+python run_cli.py examples/config-Tue-c=2.yaml
+```
 
-### Manual Installation
+### Option 2: Web Interface (Local)
 
-1. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+For a visual interface with drag & drop configuration:
 
-2. **Run the web interface:**
-   ```bash
-   python run_web.py
-   ```
+```bash
+# Install dependencies
+pip install -r requirements.txt
 
-3. **Or use the CLI:**
-   ```bash
-   python run_cli.py examples/complete-example.yaml
-   ```
+# Start the web interface
+python run_web_local.py
+```
+
+Then open http://localhost:8000 in your browser and upload a YAML configuration file.
+
+### What You'll See
+
+The scheduler will generate optimal interview schedules with:
+- ✅ All candidates assigned to all required panels
+- ✅ Panels scheduled within their availability windows
+- ✅ Proper ordering and position constraints respected
+- ✅ Panel conflicts avoided (e.g., Team and Goodbye panels)
+- ✅ Minimal gaps between consecutive sessions
+
 
 ## Configuration
 
@@ -59,45 +60,46 @@ A powerful constraint-based interview scheduling system that uses Google OR-Tool
 
 ```yaml
 # Basic configuration
-candidates: 3
+num_candidates: 3
 panels:
-  - name: "Technical"
-    duration: 45
-  - name: "Behavioral"
-    duration: 30
-  - name: "Goodbye"
-    duration: 15
-    position: "last"  # Fixed position constraint
+  Director: "30min"
+  Competencies: "1h"
+  Customers: "1h"
+  HR: "45min"
+  Lunch: "1h"
+  Team: "45min"
+  Goodbye: "30min"
 
-# Availability windows
-availability:
-  - day: "Monday"
-    start: "09:00"
-    end: "17:00"
-  - day: "Tuesday"
-    start: "10:00"
-    end: "16:00"
+# Preferred order of panels (soft constraint)
+order:
+  - Director
+  - Competencies
+  - Customers
+  - Lunch
+  - Team
+  - HR
+  - Goodbye
 
-# Constraints
-slots_per_day: 8
-max_gap: 15
-start_time: "09:00"
+# Availability windows for each panel
+availabilities:
+  Director: "8:30-10:00"
+  Competencies:
+    - "8:30-11:00"
+    - "12:00-14:00"
+  Customers: "8:30-14:00"
+  HR: "8:30-17:00"
+  Team: "8:30-17:00"
+  Goodbye: "8:30-17:00"
+  Lunch: "11:45-13:30"
+
+# Position constraints (hard constraints)
+position_constraints:
+  Goodbye: "last"
 
 # Panel conflicts (cannot run in parallel)
 panel_conflicts:
   - ["Team", "Goodbye"]
-  - ["Technical", "Behavioral"]
-
-# Preferred order (soft constraint)
-preferred_order:
-  - "Technical"
-  - "Behavioral"
-  - "Goodbye"
 ```
-
-### Environment Variables
-
-See `production.env.example` and `development.env.example` for available configuration options.
 
 ## Usage
 
@@ -142,133 +144,33 @@ scheduler = InterviewScheduler(
 solutions = scheduler.solve(max_solutions=5, max_time=300)
 ```
 
-## Docker Deployment
-
-### Development
+## Local Development
 
 ```bash
-# Start development environment
-./deploy.sh dev up
+# Install dependencies
+pip install -r requirements.txt
 
-# View logs
-./deploy.sh dev logs
+# Run CLI
+python run_cli.py examples/complete-example.yaml
 
-# Stop services
-./deploy.sh dev down
+# Run API locally (for testing)
+cd api
+python app.py
 ```
-
-### Production
-
-```bash
-# Setup production environment
-cp production.env.example production.env
-# Edit production.env with your settings
-
-# Deploy
-./deploy.sh prod up
-
-# Monitor
-./deploy.sh prod status
-./deploy.sh prod logs
-```
-
-### Docker Commands
-
-```bash
-# Build images
-docker-compose build
-
-# Start services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop services
-docker-compose down
-```
-
-For detailed Docker documentation, see [docker/README.md](docker/README.md).
 
 ## Architecture
 
-```
-interview_scheduler/
-├── src/
-│   ├── scheduler/          # Core scheduling logic
-│   │   ├── schedule.py     # InterviewScheduler class
-│   │   └── cli.py         # Command-line interface
-│   └── web/               # Web application
-│       ├── app.py         # Flask application
-│       └── templates/     # HTML templates
-├── examples/              # Configuration examples
-├── docker/               # Docker configuration
-├── run_web.py           # Web interface entry point
-├── run_cli.py           # CLI entry point
-└── deploy.sh            # Deployment script
-```
+The project uses a clean separation of concerns:
 
-## Constraints Supported
-
-- **Duration Constraints**: Each panel has a specific duration
-- **Availability Windows**: Time slots when interviews can be scheduled
-- **Gap Limits**: Maximum time between consecutive sessions
-- **Position Constraints**: Force panels to specific positions (first, last, or specific)
-- **Panel Conflicts**: Prevent certain panels from running in parallel
-- **Preferred Order**: Soft constraints for panel ordering
+- **Core Logic** (`src/scheduler/`): Pure Python scheduling algorithms
+- **CLI Interface** (`run_cli.py`): Command-line tool
+- **API Backend** (`api/`): Flask server for web interface
+- **Web Frontend** (`docs/`): Static HTML/JS for local development
 
 ## Examples
 
 See the `examples/` directory for various configuration examples:
 
-- `complete-example.yaml`: Full-featured example with all constraints
-- `config.yaml`: Basic configuration
-- `example-web.yaml`: Web interface example
-
-## Development
-
-### Project Structure
-
-The project follows a clean architecture with separation of concerns:
-
-- **Core Logic**: `src/scheduler/schedule.py` contains the main scheduling algorithm
-- **CLI Interface**: `src/scheduler/cli.py` provides command-line access
-- **Web Interface**: `src/web/app.py` serves the Flask web application
-- **Configuration**: YAML files for easy configuration management
-
-### Adding New Features
-
-1. **Core Logic**: Extend `InterviewScheduler` class in `schedule.py`
-2. **CLI**: Add new options in `cli.py`
-3. **Web Interface**: Update Flask routes in `app.py`
-4. **Configuration**: Update YAML schema and examples
-
-### Testing
-
-```bash
-# Run tests (when implemented)
-python -m pytest
-
-# Manual testing
-python run_cli.py examples/complete-example.yaml
-python run_web.py
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## License
-
-[Add your license information here]
-
-## Support
-
-For issues and questions:
-1. Check the examples in `examples/`
-2. Review the Docker documentation in `docker/README.md`
-3. Open an issue on the repository
+- `complete-example.yaml` - Full-featured example
+- `config-Thu-c=2.yaml` - Thursday schedule with 2 candidates
+- `config-Tue-c=2.yaml` - Tuesday schedule with 2 candidates

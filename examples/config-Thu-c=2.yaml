@@ -13,7 +13,7 @@ max_gap_minutes: 15      # Maximum allowed gap between consecutive sessions
 # Panel definitions with durations
 # Supported formats: '15min', '1h', '1h30min', or just numbers (minutes)
 panels:
-  Director: "15min"      # 15 minutes
+  Director: "30min"      # 15 minutes
   Competencies: "1h"     # 60 minutes
   Customers: "1h"        # 60 minutes
   HR: "45min"           # 45 minutes
@@ -35,20 +35,20 @@ order:
 # Availability windows for each panel
 # Format: "HH:MM-HH:MM" or list of time ranges
 availabilities:
-  Director: "08:30-10:00"                    # Only available morning
+  Director: "8:30-10:00"                    # Only available morning
 
   Competencies:                              # Multiple windows
-    - "08:30-11:00"                         # Morning slot
+    - "8:30-11:00"                         # Morning slot
     - "12:00-14:00"                         # Early afternoon
     - "16:00-17:00"                         # Late afternoon
 
-  Customers: "08:30-14:00"                   # Must finish by 2 PM
+  Customers: "8:30-14:00"                   # Must finish by 2 PM
 
-  HR: "08:30-17:00"                         # Available all day
+  HR: "8:30-17:00"                         # Available all day
 
-  Team: "08:30-17:00"                       # Available all day
+  Team: "8:30-17:00"                       # Available all day
 
-  Goodbye: "08:30-17:00"                    # Available all day
+  Goodbye: "8:30-17:00"                    # Available all day
 
   Lunch: "11:45-13:30"                      # Canteen serving window
 
@@ -59,3 +59,7 @@ position_constraints:
   # Competencies: 1
   Goodbye: "last"                         # Goodbye must always be the last panel
   # Lunch: 3                              # Uncomment to force Lunch to be 4th panel (0-indexed)
+
+
+panel_conflicts:
+  - ["Team", "Goodbye"]                   # Team and Goodbye share people, cannot run at same time

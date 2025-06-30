@@ -39,7 +39,6 @@ availabilities:
     - "08:30-10:00"
     - "11:00-11:30"
 
-
   Competencies:                              # Multiple windows
     - "08:30-10:00"
     - "11:00-12:00"
@@ -62,7 +61,6 @@ availabilities:
     - "15:00-17:00"
 
   Lunch: "11:45-13:30"                      # Canteen serving window
-  Lunch: "11:45-13:30"                      # Canteen serving window
 
 # Position constraints (hard constraints)
 # Force specific panels to be at specific positions in the schedule
@@ -71,3 +69,7 @@ position_constraints:
   # Competencies: 1
   Goodbye: "last"                         # Goodbye must always be the last panel
   # Lunch: 3                              # Uncomment to force Lunch to be 4th panel (0-indexed)
+
+
+panel_conflicts:
+  - ["Team", "Goodbye"]                   # Team and Goodbye share people, cannot run at same time
