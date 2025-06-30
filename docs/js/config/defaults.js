@@ -16,19 +16,21 @@ window.InterviewScheduler.Defaults = {
         panels: {
             Director: '15min',
             Competencies: '1h',
+            Customers: '1h',
             HR: '45min',
             Lunch: '1h',
             Team: '45min',
             Goodbye: '30min'
         },
-        order: ['Director', 'Competencies', 'HR', 'Lunch', 'Team', 'Goodbye'],
+        order: ['Director', 'Competencies', 'Customers', 'Lunch', 'Team', 'HR', 'Goodbye'],
         availabilities: {
             Director: '08:30-10:00',
             Competencies: ['08:30-11:00', '12:00-14:00', '16:00-17:00'],
+            Customers: '08:30-14:00',
             HR: '08:30-17:00',
-            Lunch: '11:45-13:30',
             Team: '08:30-17:00',
-            Goodbye: '08:30-17:00'
+            Goodbye: '08:30-17:00',
+            Lunch: '12:00-13:30'
         },
         position_constraints: {
             Goodbye: 'last'
