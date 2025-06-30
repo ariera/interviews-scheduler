@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YAML Configuration Help - Interview Scheduler</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+            line-height: 1.6;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .header p {
+            color: #7f8c8d;
+            font-size: 18px;
+        }
+        .btn {
+            background: #3498db;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px 5px;
+            transition: background 0.3s ease;
+        }
+        .btn:hover {
+            background: #2980b9;
+        }
+        .btn-secondary {
+            background: #95a5a6;
+        }
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+        .btn-success {
+            background: #27ae60;
+        }
+        .btn-success:hover {
+            background: #229954;
+        }
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            border-left: 4px solid #3498db;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        .section h2 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        .field {
+            margin: 15px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #ecf0f1;
+        }
+        .field-name {
+            font-weight: bold;
+            color: #2c3e50;
+            font-family: 'Courier New', monospace;
+            background: #ecf0f1;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        .field-type {
+            color: #e67e22;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+        .field-required {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+        .field-description {
+            margin-top: 8px;
+            color: #555;
+        }
+        .field-example {
+            margin-top: 8px;
+            background: #f1f2f6;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+        }
+        .yaml-template {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        .download-section {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background: #e8f5e8;
+            border-radius: 6px;
+            border: 2px dashed #27ae60;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .tip {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .nav-buttons {
+            text-align: center;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>YAML Configuration Guide</h1>
+            <p>Complete reference for configuring your interview scheduler</p>
+        </div>
+
+        <div class="nav-buttons">
+            <a href="index.html" class="btn btn-secondary">← Back to Scheduler</a>
+            <button class="btn btn-success" onclick="downloadTemplate()">📥 Download Template</button>
+        </div>
+
+        <div class="section">
+            <h2>📋 Required Fields</h2>
+
+            <div class="field">
+                <span class="field-name">num_candidates</span>
+                <span class="field-type">integer</span>
+                <span class="field-required">required</span>
+                <div class="field-description">Number of candidates to schedule interviews for.</div>
+                <div class="field-example">num_candidates: 3</div>
+            </div>
+
+            <div class="field">
+                <span class="field-name">panels</span>
+                <span class="field-type">object</span>
+                <span class="field-required">required</span>
+                <div class="field-description">Dictionary of panel names and their durations. Supported formats: '15min', '1h', '1h30min', or just numbers (minutes).</div>
+                <div class="field-example">panels:
+  Director: "15min"
+  Competencies: "1h"
+  HR: "45min"</div>
+            </div>
+
+            <div class="field">
+                <span class="field-name">order</span>
+                <span class="field-type">array</span>
+                <span class="field-required">required</span>
+                <div class="field-description">Preferred order of panels (soft constraint). The algorithm will try to follow this order but may deviate if necessary.</div>
+                <div class="field-example">order:
+  - Director
+  - Competencies
+  - HR</div>
+            </div>
+
+            <div class="field">
+                <span class="field-name">availabilities</span>
+                <span class="field-type">object</span>
+                <span class="field-required">required</span>
+                <div class="field-description">Time windows when each panel is available. Format: "HH:MM-HH:MM" or list of time ranges.</div>
+                <div class="field-example">availabilities:
+  Director: "08:30-10:00"
+  Competencies:
+    - "08:30-11:00"
+    - "12:00-14:00"
+  HR: "08:30-17:00"</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>⚙️ Optional Fields</h2>
+
+            <div class="field">
+                <span class="field-name">start_time</span>
+                <span class="field-type">string</span>
+                <span class="field-required">optional</span>
+                <div class="field-description">When the interview day starts. Default: "08:30"</div>
+                <div class="field-example">start_time: "08:30"</div>
+            </div>
+
+            <div class="field">
+                <span class="field-name">end_time</span>
+                <span class="field-type">string</span>
+                <span class="field-required">optional</span>
+                <div class="field-description">When the interview day ends. Default: "17:00"</div>
+                <div class="field-example">end_time: "17:00"</div>
+            </div>
+
+            <div class="field">
+                <span class="field-name">slot_duration_minutes</span>
+                <span class="field-type">integer</span>
+                <span class="field-required">optional</span>
+                <div class="field-description">Duration of each time slot in minutes. Default: 15</div>
+                <div class="field-example">slot_duration_minutes: 15</div>
+            </div>
+
+            <div class="field">
+                <span class="field-name">max_gap_minutes</span>
+                <span class="field-type">integer</span>
+                <span class="field-required">optional</span>
+                <div class="field-description">Maximum allowed gap between consecutive sessions. Default: 15</div>
+                <div class="field-example">max_gap_minutes: 15</div>
+            </div>
+
+            <div class="field">
+                <span class="field-name">position_constraints</span>
+                <span class="field-type">object</span>
+                <span class="field-required">optional</span>
+                <div class="field-description">Force specific panels to be at specific positions. Use "first", "last", or panel index (0-based).</div>
+                <div class="field-example">position_constraints:
+  Goodbye: "last"
+  Director: "first"
+  Lunch: 3</div>
+            </div>
+
+            <div class="field">
+                <span class="field-name">panel_conflicts</span>
+                <span class="field-type">array</span>
+                <span class="field-required">optional</span>
+                <div class="field-description">Panels that cannot run at the same time (e.g., share people).</div>
+                <div class="field-example">panel_conflicts:
+  - ["Team", "Goodbye"]
+  - ["Director", "HR"]</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📝 Complete Template</h2>
+            <div class="yaml-template"># Interview Scheduler Configuration
+# ================================
+
+# Basic scheduling parameters
+num_candidates: 3
+
+# Day configuration
+start_time: "08:30"      # When the interview day starts
+end_time: "17:00"        # When the interview day ends
+slot_duration_minutes: 15  # Duration of each time slot
+max_gap_minutes: 15      # Maximum allowed gap between consecutive sessions
+
+# Panel definitions with durations
+# Supported formats: '15min', '1h', '1h30min', or just numbers (minutes)
+panels:
+  Director: "15min"      # 15 minutes
+  Competencies: "1h"     # 60 minutes
+  Customers: "1h"        # 60 minutes
+  HR: "45min"           # 45 minutes
+  Lunch: "1h"           # 60 minutes
+  Team: "45min"         # 45 minutes
+  Goodbye: "30min"      # 30 minutes
+
+# Preferred order of panels (soft constraint)
+# The algorithm will try to follow this order but may deviate if necessary
+order:
+  - Director
+  - Competencies
+  - Customers
+  - Lunch
+  - Team
+  - HR
+  - Goodbye
+
+# Availability windows for each panel
+# Format: "HH:MM-HH:MM" or list of time ranges
+availabilities:
+  Director: "08:30-10:00"                    # Only available morning
+
+  Competencies:                              # Multiple windows
+    - "08:30-11:00"                         # Morning slot
+    - "12:00-14:00"                         # Early afternoon
+    - "16:00-17:00"                         # Late afternoon
+
+  Customers: "08:30-14:00"                   # Must finish by 2 PM
+
+  HR: "08:30-17:00"                         # Available all day
+
+  Team: "08:30-17:00"                       # Available all day
+
+  Goodbye: "08:30-17:00"                    # Available all day
+
+  Lunch: "12:00-13:30"                      # Canteen serving window
+
+# Position constraints (hard constraints)
+# Force specific panels to be at specific positions in the schedule
+position_constraints:
+  # Director: "first"                       # Force Director to be first
+  # Competencies: 1
+  Goodbye: "last"                         # Goodbye must always be the last panel
+  # Lunch: 3                              # Uncomment to force Lunch to be 4th panel (0-indexed)
+
+# Panel conflicts (cannot run in parallel)
+panel_conflicts:
+  - ["Team", "Goodbye"]                   # Team and Goodbye share people, cannot run at same time</div>
+        </div>
+
+        <div class="download-section">
+            <h3>📥 Ready to Get Started?</h3>
+            <p>Download the complete template and customize it for your needs!</p>
+            <button class="btn btn-success" onclick="downloadTemplate()">Download YAML Template</button>
+        </div>
+
+        <div class="warning">
+            <strong>⚠️ Important Notes:</strong>
+            <ul>
+                <li>All times should be in 24-hour format (HH:MM)</li>
+                <li>Panel names in <code>order</code> must match exactly with panel names in <code>panels</code></li>
+                <li>Panel names in <code>availabilities</code> must match exactly with panel names in <code>panels</code></li>
+                <li>Position constraints use 0-based indexing (first panel = 0, second panel = 1, etc.)</li>
+            </ul>
+        </div>
+
+        <div class="tip">
+            <strong>💡 Tips:</strong>
+            <ul>
+                <li>Start with a simple configuration and add complexity gradually</li>
+                <li>Use the "Validate Config" button to check your YAML before generating schedules</li>
+                <li>If no solution is found, try relaxing constraints or extending availability windows</li>
+                <li>Panel conflicts are useful when interviewers are shared between panels</li>
+            </ul>
+        </div>
+
+        <div class="nav-buttons">
+            <a href="index.html" class="btn btn-secondary">← Back to Scheduler</a>
+            <button class="btn btn-success" onclick="downloadTemplate()">📥 Download Template</button>
+        </div>
+    </div>
+
+    <script>
+        function downloadTemplate() {
+            const template = `# Interview Scheduler Configuration
+# ================================
+
+# Basic scheduling parameters
+num_candidates: 3
+
+# Day configuration
+start_time: "08:30"      # When the interview day starts
+end_time: "17:00"        # When the interview day ends
+slot_duration_minutes: 15  # Duration of each time slot
+max_gap_minutes: 15      # Maximum allowed gap between consecutive sessions
+
+# Panel definitions with durations
+# Supported formats: '15min', '1h', '1h30min', or just numbers (minutes)
+panels:
+  Director: "15min"      # 15 minutes
+  Competencies: "1h"     # 60 minutes
+  Customers: "1h"        # 60 minutes
+  HR: "45min"           # 45 minutes
+  Lunch: "1h"           # 60 minutes
+  Team: "45min"         # 45 minutes
+  Goodbye: "30min"      # 30 minutes
+
+# Preferred order of panels (soft constraint)
+# The algorithm will try to follow this order but may deviate if necessary
+order:
+  - Director
+  - Competencies
+  - Customers
+  - Lunch
+  - Team
+  - HR
+  - Goodbye
+
+# Availability windows for each panel
+# Format: "HH:MM-HH:MM" or list of time ranges
+availabilities:
+  Director: "08:30-10:00"                    # Only available morning
+
+  Competencies:                              # Multiple windows
+    - "08:30-11:00"                         # Morning slot
+    - "12:00-14:00"                         # Early afternoon
+    - "16:00-17:00"                         # Late afternoon
+
+  Customers: "08:30-14:00"                   # Must finish by 2 PM
+
+  HR: "08:30-17:00"                         # Available all day
+
+  Team: "08:30-17:00"                       # Available all day
+
+  Goodbye: "08:30-17:00"                    # Available all day
+
+  Lunch: "12:00-13:30"                      # Canteen serving window
+
+# Position constraints (hard constraints)
+# Force specific panels to be at specific positions in the schedule
+position_constraints:
+  # Director: "first"                       # Force Director to be first
+  # Competencies: 1
+  Goodbye: "last"                         # Goodbye must always be the last panel
+  # Lunch: 3                              # Uncomment to force Lunch to be 4th panel (0-indexed)
+
+# Panel conflicts (cannot run in parallel)
+panel_conflicts:
+  - ["Team", "Goodbye"]                   # Team and Goodbye share people, cannot run at same time`;
+
+            const blob = new Blob([template], { type: 'text/yaml' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'interview_scheduler_template.yaml';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+    </script>
+</body>
+</html>

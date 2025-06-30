@@ -70,6 +70,99 @@ git push origin main
 - Frontend: `https://YOUR_USERNAME.github.io/interview-scheduler/`
 - Backend: Your Render URL
 
+## Step 6: Test Your Deployment
+
+### 6.1 Test Health Endpoint
+The easiest way to verify your backend is working is to test the health endpoint:
+
+```bash
+# Test health endpoint
+curl -X GET https://YOUR_RENDER_APP.onrender.com/api/health
+```
+
+**Expected Response:**
+```json
+{
+  "service": "interview-scheduler-api",
+  "status": "healthy",
+  "version": "1.0.0"
+}
+```
+
+### 6.2 Test Configuration Validation
+Test that the API can validate configurations:
+
+```bash
+# Test configuration validation
+curl -X POST https://YOUR_RENDER_APP.onrender.com/api/validate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "config": {
+      "num_candidates": 2,
+      "panels": {"Technical": "45min", "HR": "30min"},
+      "order": ["Technical", "HR"],
+      "availabilities": {"Technical": "9:00-17:00", "HR": "9:00-17:00"}
+    }
+  }'
+```
+
+**Expected Response:**
+```json
+{
+  "message": "Configuration is valid",
+  "valid": true
+}
+```
+
+### 6.3 Test Schedule Generation
+Test the core scheduling functionality:
+
+```bash
+# Test single schedule generation
+curl -X POST https://YOUR_RENDER_APP.onrender.com/api/schedule \
+  -H "Content-Type: application/json" \
+  -d '{
+    "config": {
+      "num_candidates": 2,
+      "panels": {"Technical": "45min", "HR": "30min"},
+      "order": ["Technical", "HR"],
+      "availabilities": {"Technical": "9:00-17:00", "HR": "9:00-17:00"},
+      "max_gap_minutes": 15
+    }
+  }'
+```
+
+**Expected Response:**
+```json
+{
+  "success": true,
+  "session_id": "uuid-here",
+  "solution": {
+    "schedules": {
+      "candidate_1": [...],
+      "candidate_2": [...]
+    },
+    "summary": {
+      "status": "OPTIMAL",
+      "day_ends_at": "10:30",
+      "max_gap_enforced": "15 minutes"
+    }
+  }
+}
+```
+
+### 6.4 Test Web Interface
+1. Open your frontend URL: `https://YOUR_USERNAME.github.io/interview-scheduler/`
+2. Upload a YAML configuration file from the `examples/` folder
+3. Click "Generate Schedule" to test the full workflow
+
+### 6.5 Troubleshooting
+If the health endpoint fails:
+- Check Render dashboard for deployment status
+- Verify the service is running (green status)
+- Check logs for any error messages
+- Ensure the API URL in `docs/index.html` is correct
+
 ## Alternative: Railway Deployment
 
 If you prefer a simpler all-in-one solution:
