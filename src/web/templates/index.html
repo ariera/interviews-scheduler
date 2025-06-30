@@ -599,6 +599,10 @@ panel_conflicts:
             <div id="solutionContents"></div>
 
             <div class="download-section">
+                <button class="btn" id="downloadCsvBtn" onclick="downloadCsvForCurrentSolution()">
+                    ⬇️ Download as CSV
+                </button>
+                <br><br>
                 <button class="btn" id="downloadBtn" onclick="downloadResults()">
                     📥 Download All Solutions (JSON)
                 </button>
@@ -957,6 +961,19 @@ panel_conflicts:
             successDiv.textContent = message;
             uploadArea.appendChild(successDiv);
             setTimeout(() => successDiv.remove(), 5000);
+        }
+
+        // Add this function to handle CSV download for the current solution
+        function downloadCsvForCurrentSolution() {
+            if (!currentSessionId) return;
+            // Find the active solution tab
+            const tabs = document.querySelectorAll('.tab');
+            let activeIndex = 0;
+            tabs.forEach((tab, i) => {
+                if (tab.classList.contains('active')) activeIndex = i;
+            });
+            const url = `/download_csv/${currentSessionId}/${activeIndex}`;
+            window.open(url, '_blank');
         }
     </script>
 </body>

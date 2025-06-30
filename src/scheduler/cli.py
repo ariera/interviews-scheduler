@@ -280,6 +280,11 @@ Examples:
         help='Only validate configuration without solving'
     )
 
+    parser.add_argument(
+        '--csv-output',
+        help='Save the schedule as a CSV file (one row per slot, columns are candidates)'
+    )
+
     args = parser.parse_args()
 
     try:
@@ -300,7 +305,11 @@ Examples:
         success = scheduler.solve(max_time_seconds=args.max_time, verbose=not args.quiet)
 
         if success:
-            if args.output:
+            if args.csv_output:
+                # Save to CSV file
+                scheduler.export_to_csv_file(args.csv_output)
+                print(f"✅ Schedule saved to {args.csv_output}")
+            elif args.output:
                 # Save to JSON file
                 import json
                 results = {

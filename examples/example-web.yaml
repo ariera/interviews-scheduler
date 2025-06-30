@@ -23,9 +23,7 @@ order:
 
 availabilities:
   Director: "08:30-10:00"
-  Competencies:
-    - "08:30-11:00"
-    - "12:00-14:00"
+  Competencies: "08:30-17:00"
   HR: "08:30-17:00"
   Lunch: "11:45-13:30"
   Team: "08:30-17:00"

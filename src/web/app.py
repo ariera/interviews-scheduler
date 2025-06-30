@@ -12,9 +12,10 @@ import tempfile
 import yaml
 import json
 import time
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify, send_file, Response
 from werkzeug.utils import secure_filename
 import uuid
+from copy import deepcopy
 
 # Add the parent directory to the path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -188,6 +189,53 @@ def health_check():
     """Health check endpoint."""
     cleanup_old_sessions()  # Clean up old sessions
     return jsonify({'status': 'healthy'})
+
+@app.route('/download_csv/<session_id>/<int:solution_index>')
+def download_csv(session_id, solution_index):
+    """Download the CSV export for a specific solution."""
+    cleanup_old_sessions()
+    if session_id not in temp_files:
+        return jsonify({'error': 'Session not found or expired'}), 404
+    solutions = temp_files[session_id]['solutions']
+    config = temp_files[session_id]['config']
+    if not (0 <= solution_index < len(solutions)):
+        return jsonify({'error': 'Invalid solution index'}), 400
+    # Recreate the scheduler for this solution
+    scheduler = create_scheduler_from_config(config)
+    # Solve until we get the desired solution (same logic as upload)
+    found = False
+    for attempt in range(20):
+        scheduler.solve(max_time_seconds=30, verbose=False)
+        # Compare with the stored solution
+        summary = scheduler.get_solution_summary()
+        candidate_schedules = {
+            f'candidate_{i+1}': scheduler.get_candidate_schedule(i)
+            for i in range(scheduler.num_candidates)
+        }
+        solution_data = {
+            'summary': summary,
+            'schedules': candidate_schedules
+        }
+        # Use the same similarity check as before
+        def _strip_attempt(sol):
+            sol = deepcopy(sol)
+            sol.pop('attempt', None)
+            return sol
+        if _strip_attempt(solution_data) == _strip_attempt(solutions[solution_index]):
+            found = True
+            break
+    if not found:
+        return jsonify({'error': 'Could not regenerate the selected solution.'}), 500
+    # Export to CSV string
+    csv_str = scheduler.export_to_csv_string()
+    # Serve as file
+    return Response(
+        csv_str,
+        mimetype='text/csv',
+        headers={
+            'Content-Disposition': f'attachment; filename=interview_schedule_{session_id}_sol{solution_index+1}.csv'
+        }
+    )
 
 def _solutions_are_similar(sol1, sol2, tolerance=0.1):
     """Check if two solutions are similar (to avoid duplicates)."""

@@ -11,6 +11,8 @@ Requirements: pip install ortools==9.10.4068
 from ortools.sat.python import cp_model
 from typing import Dict, List, Tuple, Optional
 import sys
+import csv
+import io
 
 
 class InterviewScheduler:
@@ -485,6 +487,101 @@ class InterviewScheduler:
             # All these intervals cannot overlap with each other
             self.model.AddNoOverlap(conflicting_intervals)
 
+    def export_to_csv(self, filename: Optional[str] = None, date: str = "DATE") -> str:
+        """
+        Export the schedule to CSV format.
+
+        Args:
+            filename: Optional filename to save the CSV. If None, returns the CSV as a string.
+            date: The date string to use in the header (default: "DATE")
+
+        Returns:
+            The CSV content as a string if filename is None, otherwise returns the filename.
+
+        Raises:
+            ValueError: If no solution has been found.
+        """
+        if not self.solution_found:
+            raise ValueError("No solution found. Call solve() first.")
+
+        # Create a matrix to store panel assignments for each candidate at each time slot
+        schedule_matrix = {}
+
+        # Initialize all slots as empty
+        for slot in range(self.slots_per_day):
+            schedule_matrix[slot] = {c: "" for c in self.candidates}
+
+        # Fill in the panel assignments
+        for c in self.candidates:
+            for panel, duration in self.panels.items():
+                start_slot = self.solver.Value(self.start_vars[(c, panel)])
+                end_slot = start_slot + duration
+
+                # Mark all slots for this session with the panel name
+                for slot in range(start_slot, end_slot):
+                    if slot < self.slots_per_day:
+                        schedule_matrix[slot][c] = panel
+
+        # Prepare CSV data
+        csv_data = []
+
+        # Header row
+        header = [date] + [f"CANDIDATE {c+1}" for c in self.candidates]
+        csv_data.append(header)
+
+        # Data rows - one for each time slot
+        for slot in range(self.slots_per_day):
+            start_time = self.slot_to_time(slot)
+            end_time = self.slot_to_time(slot + 1)
+            time_range = f"{start_time}-{end_time}"
+
+            row = [time_range]
+            for c in self.candidates:
+                row.append(schedule_matrix[slot][c])
+
+            csv_data.append(row)
+
+        # Write to file or return as string
+        if filename:
+            with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerows(csv_data)
+            return filename
+        else:
+            # Return as string
+            output = io.StringIO()
+            writer = csv.writer(output)
+            writer.writerows(csv_data)
+            return output.getvalue()
+
+    def export_to_csv_string(self) -> str:
+        """
+        Export the schedule to CSV format and return as a string.
+
+        Returns:
+            The CSV content as a string.
+
+        Raises:
+            ValueError: If no solution has been found.
+        """
+        return self.export_to_csv()
+
+    def export_to_csv_file(self, filename: str, date: str = "DATE") -> str:
+        """
+        Export the schedule to CSV format and save to a file.
+
+        Args:
+            filename: The filename to save the CSV to.
+            date: The date string to use in the header (default: "DATE")
+
+        Returns:
+            The filename that was written to.
+
+        Raises:
+            ValueError: If no solution has been found.
+        """
+        return self.export_to_csv(filename=filename, date=date)
+
 
 def main():
     """Example usage with the original problem parameters."""
@@ -540,6 +637,22 @@ def main():
 
     if scheduler.solve(verbose=True):
         scheduler.print_solution()
+
+        # Demonstrate CSV export
+        print("\n" + "="*50)
+        print("CSV EXPORT DEMONSTRATION")
+        print("="*50)
+
+        # Export to string and print
+        csv_content = scheduler.export_to_csv_string()
+        print("CSV Export (first 10 lines):")
+        print(csv_content.split('\n')[:10])
+        print("...")
+
+        # Export to file
+        filename = scheduler.export_to_csv_file("interview_schedule.csv", date="2024-01-15")
+        print(f"\nCSV saved to: {filename}")
+
     else:
         print("Failed to find a solution!")
 
