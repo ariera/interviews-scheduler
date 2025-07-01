@@ -89,6 +89,11 @@ window.InterviewScheduler.App = {
                     }
                 };
 
+                const updatePanelDuration = (index) => {
+                    // Update the panels config when duration changes
+                    store.updatePanels();
+                };
+
                 // Position constraint management
                 const addPositionConstraint = () => {
                     store.positionConstraintEntries.value.push({
@@ -152,6 +157,7 @@ window.InterviewScheduler.App = {
                     getPanelDisplayOrder,
                     getAvailabilityForPanel,
                     updateAvailabilityForPanel,
+                    updatePanelDuration,
 
                     // UI actions
                     addPositionConstraint,

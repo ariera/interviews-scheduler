@@ -150,6 +150,23 @@ window.InterviewScheduler.ConfigStore = {
     },
 
     /**
+     * Rebuild panel order positions from the current order array
+     */
+    rebuildPanelOrderPositions() {
+        // Clear existing positions
+        this.panelOrderPositions.value = {};
+
+        // Rebuild from current order
+        this.config.order.forEach((panel, index) => {
+            if (this.config.panels[panel]) {
+                this.panelOrderPositions.value[panel] = (index + 1).toString();
+            }
+        });
+
+        console.log('✅ Rebuilt panel order positions:', this.panelOrderPositions.value);
+    },
+
+    /**
      * Update availabilities from entries
      */
     updateAvailabilities() {
@@ -245,6 +262,9 @@ window.InterviewScheduler.ConfigStore = {
         if (this.panelOrderPositions.value[panelName] !== undefined) {
             delete this.panelOrderPositions.value[panelName];
         }
+
+        // Rebuild panel order positions to reflect the new order
+        this.rebuildPanelOrderPositions();
 
         console.log(`✅ Removed panel "${panelName}" and cleaned up all references`);
     },
