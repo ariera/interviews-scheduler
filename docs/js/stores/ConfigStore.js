@@ -221,16 +221,32 @@ window.InterviewScheduler.ConfigStore = {
         }
 
         // Remove from position constraints
+        if (this.config.position_constraints[panelName]) {
+            delete this.config.position_constraints[panelName];
+        }
         const constraintIdx = this.positionConstraintEntries.value.findIndex(entry => entry.panel === panelName);
         if (constraintIdx > -1) {
             this.positionConstraintEntries.value.splice(constraintIdx, 1);
             this.updatePositionConstraints();
         }
 
+        // Remove from panel conflicts
+        this.config.panel_conflicts = this.config.panel_conflicts.filter(conflict => {
+            return !conflict.includes(panelName);
+        });
+
+        // Remove from conflict entries
+        this.conflictEntries.value = this.conflictEntries.value.filter(entry => {
+            return entry.panel1 !== panelName && entry.panel2 !== panelName;
+        });
+        this.updatePanelConflicts();
+
         // Remove from panel order positions
         if (this.panelOrderPositions.value[panelName] !== undefined) {
             delete this.panelOrderPositions.value[panelName];
         }
+
+        console.log(`✅ Removed panel "${panelName}" and cleaned up all references`);
     },
 
     /**
